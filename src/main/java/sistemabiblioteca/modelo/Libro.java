@@ -3,18 +3,27 @@ package sistemabiblioteca.modelo;
 public class Libro {
     private int id;
     private String titulo;
-    private String fechaPublicacion;
+    private String anio;
     private String autor;
     private String categoria;
     private String editorial;
-    private String idioma;
-    private String paginas;
-    private String descripcion;
-    private String ejemplares;
-    private int stock;
+    private int total;
     private int disponibles;
 
-    //  Setters    
+    // Constructor
+    public Libro(int id, String titulo, String fecha, String autor, String categoria, String editorial, int total, int disponibles) {
+		super();
+		this.id = id;
+		this.titulo = titulo;
+		this.anio = fecha;
+		this.autor = autor;
+		this.categoria = categoria;
+		this.editorial = editorial;
+		this.total = total;
+		this.disponibles = disponibles;
+	}
+
+	//  Setters    
     public void setId(int id) {
         this.id = id;
     }
@@ -23,8 +32,8 @@ public class Libro {
         this.titulo = titulo;
     }
 
-    public void setFechaPublicacion(String fechaPublicacion) {
-        this.fechaPublicacion = fechaPublicacion;
+    public void setAnio(String anio) {
+        this.anio = anio;
     }
 
     public void setAutor(String autor) {
@@ -39,24 +48,8 @@ public class Libro {
         this.editorial = editorial;
     }
 
-    public void setIdioma(String idioma) {
-        this.idioma = idioma;
-    }
-
-    public void setPaginas(String paginas) {
-        this.paginas = paginas;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public void setEjemplares(String ejemplares) {
-        this.ejemplares = ejemplares;
-    }
-
-    public void setStock(int stock) {
-        this.stock = stock;
+    public void setTotal(int total) {
+        this.total = total;
     }
 
     public void setDisponibles(int disponibles) {
@@ -64,52 +57,39 @@ public class Libro {
     }
 
     //  Getters 
+	public int getId() {
+		return id;
+	}
 
-    public int getId() {
-        return id;
-    }
+	public String getTitulo() {
+		return titulo;
+	}
 
-    public String getTitulo() {
-        return titulo;
-    }
+	public String getAnio() {
+		return anio;
+	}
 
-    public String getFechaPublicacion() {
-        return fechaPublicacion;
-    }
+	public String getAutor() {
+		return autor;
+	}
 
-    public String getAutor() {
-        return autor;
-    }
+	public String getCategoria() {
+		return categoria;
+	}
 
-    public String getCategoria() {
-        return categoria;
-    }
+	public String getEditorial() {
+		return editorial;
+	}
 
-    public String getEditorial() {
-        return editorial;
-    }
+	public int getTotal() {
+		return total;
+	}
 
-    public String getIdioma() {
-        return idioma;
-    }
+	public int getDisponibles() {
+		return disponibles;
+	}
 
-    public String getPaginas() {
-        return paginas;
-    }
+ 
 
-    public String getDescripcion() {
-        return descripcion;
-    }
 
-    public String getEjemplares() {
-        return ejemplares;
-    }
-
-    public int getStock() {
-        return stock;
-    }
-
-    public int getDisponibles() {
-        return disponibles;
-    }
 }
