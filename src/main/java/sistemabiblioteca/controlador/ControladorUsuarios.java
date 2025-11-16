@@ -23,6 +23,7 @@ public class ControladorUsuarios {
         vista.agregarEditarUsuarioListener(e -> editarUsuario());
         vista.agregarEliminarUsuarioListener(e -> eliminarUsuario());
         vista.agregarActualizarUsuariosListener(e -> cargarUsuarios());
+        vista.agregarBuscarUsuarioListener(e -> buscarUsuarios());
     }
     
     private void editarUsuario() {
@@ -113,5 +114,34 @@ public class ControladorUsuarios {
     
     public int obtenerTotalUsuarios() {
         return usuarioDAO.contarTotalUsuarios();
+    }
+    
+    private void buscarUsuarios() {
+        String criterio = vista.getCriterioBusquedaUsuario();
+        String valor = vista.getTextoBusquedaUsuario();
+        
+        if (valor.isEmpty()) {
+            JOptionPane.showMessageDialog(vista, "Ingrese un valor para buscar", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        List<Usuario> usuarios = usuarioDAO.buscarUsuarios(criterio, valor);
+        Object[][] datos = new Object[usuarios.size()][6];
+        
+        for (int i = 0; i < usuarios.size(); i++) {
+            Usuario usuario = usuarios.get(i);
+            datos[i][0] = usuario.getId();
+            datos[i][1] = usuario.getNombre();
+            datos[i][2] = usuario.getApellidoPaterno();
+            datos[i][3] = usuario.getApellidoMaterno();
+            datos[i][4] = usuario.getTelefono();
+            datos[i][5] = usuario.getSanciones();
+        }
+        
+        vista.actualizarTablaBusquedaUsuarios(datos);
+        
+        if (usuarios.isEmpty()) {
+            JOptionPane.showMessageDialog(vista, "No se encontraron usuarios", "Info", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 }

@@ -13,6 +13,7 @@ public class PanelUsuarios extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane tabbedPane;
     private JTable tableUsuarios;
+    private JTable tableBusquedaUsuarios;
     
     // Campos del formulario
     private JTextField txtNombre;
@@ -20,13 +21,17 @@ public class PanelUsuarios extends JPanel {
     private JTextField txtApellidoMaterno;
     private JTextField txtDomicilio;
     private JTextField txtTelefono;
-    
+    private JTextField txtBusquedaUsuario;
+
     // Botones
     private JButton btnGuardarUsuario;
     private JButton btnLimpiarUsuario;
     private JButton btnEditar;
     private JButton btnEliminar;
     private JButton btnActualizar;
+    private JButton btnBuscarUsuario;
+    
+    private JComboBox<String> comboBoxCriterioUsuario;
 
     public PanelUsuarios() {
         setLayout(new BorderLayout(0, 0));
@@ -64,6 +69,9 @@ public class PanelUsuarios extends JPanel {
         
         // Pestaña 2: Agregar usuario
         tabbedPane.addTab("Agregar Usuario", crearPanelAgregarUsuario());
+        
+     // Pestaña 3: Buscar usuario
+        tabbedPane.addTab("Buscar Usuario", crearPanelBuscarUsuario());
     }
     
     private JPanel crearPanelListaUsuarios() {
@@ -138,17 +146,71 @@ public class PanelUsuarios extends JPanel {
         
         return panel;
     }
-    
+    private JPanel crearPanelBuscarUsuario() {
+        JPanel panel = new JPanel(new BorderLayout(0, 0));
+        
+        // Panel de búsqueda
+        JPanel panelBusqueda = new JPanel();
+        panelBusqueda.setBorder(new EmptyBorder(20, 20, 20, 20));
+        panel.add(panelBusqueda, BorderLayout.NORTH);
+        panelBusqueda.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        
+        JLabel lblBuscarPor = new JLabel("Buscar por:");
+        panelBusqueda.add(lblBuscarPor);
+        
+        comboBoxCriterioUsuario = new JComboBox<>();
+        comboBoxCriterioUsuario.setModel(new DefaultComboBoxModel<>(new String[] {
+            "Nombre", "Apellido Paterno", "Teléfono", "ID"
+        }));
+        panelBusqueda.add(comboBoxCriterioUsuario);
+        
+        txtBusquedaUsuario = new JTextField();
+        panelBusqueda.add(txtBusquedaUsuario);
+        txtBusquedaUsuario.setColumns(20);
+        
+        btnBuscarUsuario = new JButton("Buscar");
+        panelBusqueda.add(btnBuscarUsuario);
+        
+        // Tabla de resultados
+        JScrollPane scrollPaneBusqueda = new JScrollPane();
+        panel.add(scrollPaneBusqueda, BorderLayout.CENTER);
+        
+        tableBusquedaUsuarios = new JTable();
+        tableBusquedaUsuarios.setModel(new DefaultTableModel(
+            new Object[][] {},
+            new String[] {"ID", "Nombre", "Apellido Paterno", "Apellido Materno", "Teléfono", "Sanciones"}
+        ) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        });
+        scrollPaneBusqueda.setViewportView(tableBusquedaUsuarios);
+        
+        return panel;
+    }
     // Getters para los datos del formulario
     public String getNombre() { return txtNombre.getText().trim(); }
     public String getApellidoPaterno() { return txtApellidoPaterno.getText().trim(); }
     public String getApellidoMaterno() { return txtApellidoMaterno.getText().trim(); }
     public String getDomicilio() { return txtDomicilio.getText().trim(); }
     public String getTelefono() { return txtTelefono.getText().trim(); }
+    public String getTextoBusquedaUsuario() { return txtBusquedaUsuario.getText().trim(); }
+    public String getCriterioBusquedaUsuario() { return comboBoxCriterioUsuario.getSelectedItem().toString(); }
     
     // Métodos para manipular la tabla
     public void actualizarTablaUsuarios(Object[][] datos) {
         DefaultTableModel modelo = (DefaultTableModel) tableUsuarios.getModel();
+        modelo.setRowCount(0);
+        for (Object[] fila : datos) {
+            modelo.addRow(fila);
+        }
+    }
+    
+    public void actualizarTablaBusquedaUsuarios(Object[][] datos) {
+        DefaultTableModel modelo = (DefaultTableModel) tableBusquedaUsuarios.getModel();
         modelo.setRowCount(0);
         for (Object[] fila : datos) {
             modelo.addRow(fila);
@@ -162,6 +224,15 @@ public class PanelUsuarios extends JPanel {
         txtApellidoMaterno.setText("");
         txtDomicilio.setText("");
         txtTelefono.setText("");
+    }
+    
+    // Getters para las tablas
+    public JTable getTableBusquedaUsuarios() {
+        return tableBusquedaUsuarios;
+    }
+    
+    public int getFilaSeleccionadaBusquedaUsuarios() {
+        return tableBusquedaUsuarios.getSelectedRow();
     }
     
     // Métodos para agregar listeners
@@ -192,5 +263,9 @@ public class PanelUsuarios extends JPanel {
 
     public void agregarActualizarUsuariosListener(ActionListener listener) {
         btnActualizar.addActionListener(listener);
+    }
+    
+    public void agregarBuscarUsuarioListener(ActionListener listener) {
+        btnBuscarUsuario.addActionListener(listener);
     }
 }

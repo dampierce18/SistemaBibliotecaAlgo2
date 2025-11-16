@@ -122,6 +122,9 @@ public class UsuarioDAO {
             case "Teléfono":
                 sql = "SELECT * FROM usuarios WHERE telefono LIKE ? ORDER BY nombre, apellido_paterno";
                 break;
+            case "ID":  // ← NUEVO CASO PARA BUSCAR POR ID
+                sql = "SELECT * FROM usuarios WHERE id = ? ORDER BY nombre, apellido_paterno";
+                break;
             default:
                 sql = "SELECT * FROM usuarios WHERE nombre LIKE ? ORDER BY nombre, apellido_paterno";
         }
@@ -129,7 +132,18 @@ public class UsuarioDAO {
         try (Connection conn = ConexionSQLite.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setString(1, "%" + valor + "%");
+            // Para ID usamos búsqueda exacta, para los otros usamos LIKE
+            if ("ID".equals(criterio)) {
+                try {
+                    pstmt.setInt(1, Integer.parseInt(valor)); // ← Búsqueda exacta por ID
+                } catch (NumberFormatException e) {
+                    System.err.println("Error: ID debe ser un número válido");
+                    return usuarios; // Retorna lista vacía si el ID no es número
+                }
+            } else {
+                pstmt.setString(1, "%" + valor + "%");    // ← Búsqueda parcial para texto
+            }
+            
             ResultSet rs = pstmt.executeQuery();
             
             while (rs.next()) {
