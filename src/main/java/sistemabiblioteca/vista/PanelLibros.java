@@ -11,11 +11,9 @@ public class PanelLibros extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
 	private JTabbedPane tabbedPane;
     private JTable tableLibros;
     private JTable tableBusqueda;
-    private JTextField txtID;
     private JTextField txtTitulo;
     private JTextField txtAutor;
     private JTextField txtEditorial;
@@ -31,6 +29,11 @@ public class PanelLibros extends JPanel {
     private JTextField txtBusqueda;
     private JComboBox<String> comboBoxCriterio;
 
+    public void setModoEmpleado() {
+        btnEditar.setVisible(false);
+        btnEliminar.setVisible(false);
+    }
+    
     public PanelLibros() {
         setLayout(new BorderLayout(0, 0));
         
@@ -78,7 +81,7 @@ public class PanelLibros extends JPanel {
         tableLibros = new JTable();
         tableLibros.setModel(new DefaultTableModel(
             new Object[][] {},
-            new String[] {"ID", "Título", "Autor", "Año", "Total Ejemplares", "Disponibles"}
+            new String[] {"ID", "Título", "Autor", "Año","Categoria", "Total Ejemplares", "Disponibles"}
         ) {
             private static final long serialVersionUID = 1L;
             boolean[] columnEditables = new boolean[] {false, false, false, false, false, false, false};
@@ -99,12 +102,6 @@ public class PanelLibros extends JPanel {
         panelFormulario.setLayout(new GridLayout(7, 2, 10, 10));
         
         // Campos del formulario
-        JLabel lblID = new JLabel("ID:");
-        panelFormulario.add(lblID);
-        
-        txtID = new JTextField();
-        panelFormulario.add(txtID);
-        txtID.setColumns(10);
         
         JLabel lblTitulo_1 = new JLabel("Título:");
         panelFormulario.add(lblTitulo_1);
@@ -176,7 +173,7 @@ public class PanelLibros extends JPanel {
         
         comboBoxCriterio = new JComboBox<>();
         comboBoxCriterio.setModel(new DefaultComboBoxModel<>(new String[] {
-            "Título", "Autor", "ISBN", "Categoría"
+            "Título", "Autor", "ID", "Categoría"
         }));
         panelBusqueda.add(comboBoxCriterio);
         
@@ -194,7 +191,7 @@ public class PanelLibros extends JPanel {
         tableBusqueda = new JTable();
         tableBusqueda.setModel(new DefaultTableModel(
             new Object[][] {},
-            new String[] {"ID", "Título", "Autor", "Año", "Total Ejemplares", "Disponibles"}
+            new String[] {"ID", "Título", "Autor", "Año","Categoria", "Total Ejemplares", "Disponibles"}
         ) {
             private static final long serialVersionUID = 1L;
             boolean[] columnEditables = new boolean[] {false, false, false, false, false};
@@ -206,7 +203,6 @@ public class PanelLibros extends JPanel {
     }
 
     // Métodos para acceder a los datos (GETTERS)
-    public String getID() { return txtID.getText().trim(); }
     public String getTitulo() { return txtTitulo.getText().trim(); }
     public String getAutor() { return txtAutor.getText().trim(); }
     public String getEditorial() { return txtEditorial.getText().trim(); }
@@ -218,7 +214,6 @@ public class PanelLibros extends JPanel {
     
     // Métodos para manipular la UI
     public void limpiarFormulario() {
-        txtID.setText("");
         txtTitulo.setText("");
         txtAutor.setText("");
         txtEditorial.setText("");
@@ -251,7 +246,7 @@ public class PanelLibros extends JPanel {
         return tableBusqueda.getSelectedRow();
     }
     
-    // Métodos para agregar listeners (mantienen la compatibilidad con WindowBuilder)
+    // Métodos para agregar listeners
     public void agregarGuardarListener(ActionListener listener) {
         btnGuardar.addActionListener(listener);
     }
@@ -276,7 +271,7 @@ public class PanelLibros extends JPanel {
         btnBuscar.addActionListener(listener);
     }
     
-    // Getters para las tablas (si el controlador las necesita)
+    // Getters para las tablas 
     public JTable getTableLibros() { return tableLibros; }
     public JTable getTableBusqueda() { return tableBusqueda; }
 }

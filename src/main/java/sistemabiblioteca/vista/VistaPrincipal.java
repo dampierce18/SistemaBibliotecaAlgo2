@@ -23,7 +23,6 @@ public class VistaPrincipal extends JFrame {
     // Botones del menú lateral
     private JButton btnPrincipal;
     private JButton btnPrestamos;
-    private JButton btnDevoluciones;
     private JButton btnUsuarios;
     private JButton btnLibros;
     private JButton btnReportes;
@@ -31,10 +30,8 @@ public class VistaPrincipal extends JFrame {
     
     // Paneles de contenido
     private JPanel panelPrincipal;
-    private JPanel panelPrestamos;
-    private JPanel panelDevoluciones;
-    private JPanel panelUsuarios;
-    //private JPanel panelLibros;
+    private PanelPrestamos panelPrestamos;
+    private PanelUsuarios panelUsuarios;
     private PanelLibros panelLibros;
     private JPanel panelReportes;
     
@@ -80,9 +77,6 @@ public class VistaPrincipal extends JFrame {
         btnPrestamos = new JButton("Préstamos");
         panel.add(btnPrestamos);
         
-        btnDevoluciones = new JButton("Devoluciones");
-        panel.add(btnDevoluciones);
-        
         btnUsuarios = new JButton("Usuarios");
         panel.add(btnUsuarios);
         
@@ -91,7 +85,7 @@ public class VistaPrincipal extends JFrame {
         
         btnReportes = new JButton("Reportes");
         panel.add(btnReportes);
-
+        panel.add(new JLabel());
         panel.add(new JLabel()); // espacio
 
         btnSalir = new JButton("Salir");
@@ -106,23 +100,13 @@ public class VistaPrincipal extends JFrame {
         panelPrincipal = crearPanelPrincipal();
         panelContenido.add(panelPrincipal, "Principal");
         
-        // Panel Préstamos (por implementar)
-        panelPrestamos = crearPanelModulo("Módulo de Préstamos", "Aquí irá la gestión de préstamos");
+        panelPrestamos = new PanelPrestamos();
         panelContenido.add(panelPrestamos, "Préstamos");
         
-        // Panel Devoluciones (por implementar)
-        panelDevoluciones = crearPanelModulo("Módulo de Devoluciones", "Aquí irá la gestión de devoluciones");
-        panelContenido.add(panelDevoluciones, "Devoluciones");
-        
-        // Panel Usuarios (por implementar)
-        panelUsuarios = crearPanelModulo("Módulo de Devoluciones", "Aquí irá la gestión de devoluciones");
+        panelUsuarios = new PanelUsuarios();
         panelContenido.add(panelUsuarios, "Usuarios");
         
-        // Panel Libros (por implementar)
-        //panelLibros = crearPanelModulo("Módulo de Libros", "Aquí irá la gestión de libros");
-        //panelContenido.add(panelLibros, "Libros");
-        
-        panelLibros = new PanelLibros();  // Tu nuevo panel
+        panelLibros = new PanelLibros();
         panelContenido.add(panelLibros, "Libros");
         
         // Panel Reportes (por implementar)
@@ -134,7 +118,6 @@ public class VistaPrincipal extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
 
-        // ----- Panel superior (título) -----
         JLabel lblTitulo = new JLabel("Sistema de Gestión de Biblioteca", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         lblTitulo.setOpaque(true);
@@ -143,7 +126,6 @@ public class VistaPrincipal extends JFrame {
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         panel.add(lblTitulo, BorderLayout.NORTH);
 
-        // ----- Panel central (tarjetas) -----
         JPanel contenedorTarjetas = new JPanel();
         contenedorTarjetas.setMinimumSize(new Dimension(-20, 20));
         contenedorTarjetas.setBackground(Color.WHITE);
@@ -244,10 +226,6 @@ public class VistaPrincipal extends JFrame {
         btnPrestamos.addActionListener(listener);
     }
     
-    public void agregarListenerDevoluciones(ActionListener listener) {
-        btnDevoluciones.addActionListener(listener);
-    }
-    
     public void agregarListenerUsuarios(ActionListener listener) {
         btnUsuarios.addActionListener(listener);
     }
@@ -291,14 +269,30 @@ public class VistaPrincipal extends JFrame {
     
     // Getters para los paneles (para que el controlador pueda acceder)
     public JPanel getPanelPrincipal() { return panelPrincipal; }
-    public JPanel getPanelPrestamos() { return panelPrestamos; }
-    public JPanel getPanelDevoluciones() { return panelDevoluciones; }
-    public JPanel getPanelUsuarios() { return panelUsuarios; }
-    //public JPanel getPanelLibros() { return panelLibros; }
+    public PanelPrestamos getPanelPrestamos() { return panelPrestamos; }
+    public PanelUsuarios getPanelUsuarios() { return panelUsuarios; }
     public PanelLibros getPanelLibros() { return panelLibros; }
     public JPanel getPanelReportes() { return panelReportes; }
     public JLabel getLblTotalLibros() { return lblTotalLibros; }
     public JLabel getLblTotalUsuarios() { return lblTotalUsuarios; }
     public JLabel getLblPrestamosActivos() { return lblPrestamosActivos; }
     public JLabel getLblAtrasados() { return lblAtrasados; }
+    
+    
+ // En VistaPrincipal.java, agrega estos getters:
+    public JButton getBtnReportes() {
+        return btnReportes;
+    }
+
+    public JButton getBtnUsuarios() {
+        return btnUsuarios;
+    }
+
+    public JButton getBtnLibros() {
+        return btnLibros;
+    }
+    public JButton getBtnPrestamos() {
+        return btnPrestamos;
+    }
+    
 }

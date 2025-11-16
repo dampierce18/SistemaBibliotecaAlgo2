@@ -9,6 +9,22 @@ public class Usuario {
     private String telefono;
     private int sanciones;
     private int montoSancion;
+    
+    public Usuario() {
+        this.sanciones = 0;
+        this.montoSancion = 0;
+    }
+    
+    public Usuario(String nombre, String apellidoPaterno, String apellidoMaterno, 
+                   String domicilio, String telefono) {
+        this.nombre = nombre;
+        this.apellidoPaterno = apellidoPaterno;
+        this.apellidoMaterno = apellidoMaterno;
+        this.domicilio = domicilio;
+        this.telefono = telefono;
+        this.sanciones = 0;
+        this.montoSancion = 0;
+    }
 
     // Setters 
 

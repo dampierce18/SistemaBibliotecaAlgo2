@@ -7,8 +7,12 @@ public class ControladorLogin {
     private LoginFrame vista;
     
     // Credenciales fijas
-    private static final String USUARIO_VALIDO = "admin";
-    private static final String PASSWORD_VALIDO = "12345";
+    private static final String ADMIN_USUARIO = "admin";
+    private static final String ADMIN_PASSWORD = "123";
+    private static final String EMPLEADO_USUARIO = "empleado";
+    private static final String EMPLEADO_PASSWORD = "123";
+    
+    private String usuarioLogueado; // Guardar quién inició sesión
     
     public ControladorLogin() {
         this.vista = new LoginFrame();
@@ -30,8 +34,13 @@ public class ControladorLogin {
             return;
         }
         
-        if (usuario.equals(USUARIO_VALIDO) && password.equals(PASSWORD_VALIDO)) {
+        // Verificar credenciales para ambos usuarios
+        if ((usuario.equals(ADMIN_USUARIO) && password.equals(ADMIN_PASSWORD)) ||
+            (usuario.equals(EMPLEADO_USUARIO) && password.equals(EMPLEADO_PASSWORD))) {
+            
+            this.usuarioLogueado = usuario; // Guardar quién se logueó
             abrirSistemaPrincipal();
+            
         } else {
             vista.mostrarError("Usuario o contraseña incorrectos");
             vista.limpiarFormulario();
@@ -46,7 +55,7 @@ public class ControladorLogin {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new ControladorVistaPrincipal();
+                new ControladorVistaPrincipal(usuarioLogueado);
             }
         });
     }
@@ -64,4 +73,5 @@ public class ControladorLogin {
             System.exit(0);
         }
     }
+    
 }

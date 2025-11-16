@@ -6,38 +6,70 @@ import javax.swing.*;
 public class ControladorVistaPrincipal {
     private VistaPrincipal vista;
     private ControladorLibros controladorLibros;
+    private ControladorPrestamos controladorPrestamos;
+    private ControladorUsuarios controladorUsuarios;
     
-    // Datos de ejemplo para las tarjetas de resumen
-    private int totalLibros = 0;
-    private int totalUsuarios = 0;
-    private int prestamosActivos = 0;
-    private int prestamosAtrasados = 0;
+    private String usuarioLogueado;
     
-    public ControladorVistaPrincipal() {
+    public ControladorVistaPrincipal(String usuarioLogueado) {
+    	this.usuarioLogueado = usuarioLogueado;
         this.vista = new VistaPrincipal();
         this.controladorLibros = new ControladorLibros(vista.getPanelLibros());
+        this.controladorPrestamos = new ControladorPrestamos(vista.getPanelPrestamos());
+        this.controladorUsuarios = new ControladorUsuarios(vista.getPanelUsuarios());
+        configurarPermisos();
+        cargarDatos();
         configurarEventos();
-        cargarDatosEjemplo();
         vista.setVisible(true);
+        
+        String rol = esAdmin() ? "Administrador" : "Empleado";
+        JOptionPane.showMessageDialog(vista, "Bienvenido: " + usuarioLogueado + " (" + rol + ")", "Bienvenido", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void configurarPermisos() {
+        if (!esAdmin()) {
+            ocultarFuncionalidadesEmpleado();
+        }
+    }
+    
+    private void ocultarFuncionalidadesEmpleado() {
+        vista.getBtnReportes().setVisible(false);
+        vista.getPanelLibros().setModoEmpleado();
+        vista.getPanelUsuarios().setModoEmpleado();
+    }
+    
+    private boolean esAdmin() {
+        return "admin".equals(usuarioLogueado);
     }
     
     private void configurarEventos() {
-        // Navegación entre paneles
         vista.agregarListenerPrincipal(e -> mostrarPanelPrincipal());
         vista.agregarListenerPrestamos(e -> mostrarPanelPrestamos());
-        vista.agregarListenerDevoluciones(e -> mostrarPanelDevoluciones());
         vista.agregarListenerUsuarios(e -> mostrarPanelUsuarios());
         vista.agregarListenerLibros(e -> mostrarPanelLibros());
         vista.agregarListenerReportes(e -> mostrarPanelReportes());
         vista.agregarListenerSalir(e -> salirSistema());
     }
     
-    private void cargarDatosEjemplo() {
+    private void cargarDatos() {
         try {
             int totalLibros = controladorLibros.obtenerTotalLibros();
             vista.getLblTotalLibros().setText(String.valueOf(totalLibros));
+            
+            int prestamosActivos = controladorPrestamos.obtenerPrestamosActivos();
+            vista.getLblPrestamosActivos().setText(String.valueOf(prestamosActivos));
+            
+            int prestamosAtrasados = controladorPrestamos.obtenerPrestamosAtrasados();
+            vista.getLblAtrasados().setText(String.valueOf(prestamosAtrasados));
+            
+            int totalUsuarios = controladorUsuarios.obtenerTotalUsuarios();
+            vista.getLblTotalUsuarios().setText(String.valueOf(totalUsuarios));
         } catch (Exception e) {
             vista.getLblTotalLibros().setText("0");
+            vista.getLblPrestamosActivos().setText("0");
+            vista.getLblAtrasados().setText("0");
+            vista.getLblTotalUsuarios().setText("0");
+
         }
     }
     
@@ -50,11 +82,6 @@ public class ControladorVistaPrincipal {
     private void mostrarPanelPrestamos() {
         vista.mostrarPanelPrestamos();
         System.out.println("Mostrando panel Préstamos");
-    }
-    
-    private void mostrarPanelDevoluciones() {
-        vista.mostrarPanelDevoluciones();
-        System.out.println("Mostrando panel Devoluciones");
     }
     
     private void mostrarPanelUsuarios() {
@@ -86,25 +113,6 @@ public class ControladorVistaPrincipal {
             System.exit(0);
         }
     }
-    
-    // Métodos para obtener datos de ejemplo (para futuras expansiones)
-    public int getTotalLibros() {
-        return totalLibros;
-    }
-    
-    public int getTotalUsuarios() {
-        return totalUsuarios;
-    }
-    
-    public int getPrestamosActivos() {
-        return prestamosActivos;
-    }
-    
-    public int getPrestamosAtrasados() {
-        return prestamosAtrasados;
-    }
-    
-    public VistaPrincipal getVista() {
-        return vista;
-    }
 }
+    
+    

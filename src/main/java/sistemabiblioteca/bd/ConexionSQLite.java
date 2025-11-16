@@ -35,24 +35,40 @@ public class ConexionSQLite {
             """;
             
         String sqlUsuarios = """
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                codigo TEXT NOT NULL UNIQUE,
-                nombre TEXT NOT NULL,
-                email TEXT,
-                telefono TEXT,
-                tipo TEXT NOT NULL,
-                activo BOOLEAN DEFAULT 1,
-                fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-            """;
+                CREATE TABLE IF NOT EXISTS usuarios (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nombre TEXT NOT NULL,
+                    apellido_paterno TEXT NOT NULL,
+                    apellido_materno TEXT,
+                    domicilio TEXT,
+                    telefono TEXT,
+                    sanciones INTEGER DEFAULT 0,
+                    monto_sancion INTEGER DEFAULT 0,
+                    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+                """;
         
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(sqlLibros);
-            stmt.execute(sqlUsuarios);
-            System.out.println("Tablas verificadas/creadas correctamente");
-        } catch (SQLException e) {
-            System.err.println("Error creando tablas: " + e.getMessage());
-        }
+        String sqlPrestamos = """
+                CREATE TABLE IF NOT EXISTS prestamos (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    libro_id INTEGER NOT NULL,
+                    usuario_id INTEGER NOT NULL,
+                    fecha_prestamo DATE NOT NULL,
+                    fecha_devolucion DATE NOT NULL,
+                    fecha_devolucion_real DATE,
+                    estado TEXT NOT NULL DEFAULT 'ACTIVO',
+                    FOREIGN KEY (libro_id) REFERENCES libros (id),
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+                )
+                """;
+            
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(sqlLibros);
+                stmt.execute(sqlUsuarios);
+                stmt.execute(sqlPrestamos);  // ← NUEVA TABLA
+                System.out.println("Tablas verificadas/creadas correctamente");
+            } catch (SQLException e) {
+                System.err.println("Error creando tablas: " + e.getMessage());
+            }
     }
 }
