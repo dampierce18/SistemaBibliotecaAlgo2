@@ -37,26 +37,22 @@ class ControladorVistaPrincipalTest {
     private ControladorVistaPrincipal controlador;
 
     private void configurarMocksCompletos() {
-        // Configurar TODOS los mocks que el constructor necesita
         when(vista.getBtnReportes()).thenReturn(btnReportes);
         when(vista.getPanelLibros()).thenReturn(panelLibros);
         when(vista.getPanelUsuarios()).thenReturn(panelUsuarios);
         when(vista.getPanelPrestamos()).thenReturn(panelPrestamos);
         when(vista.getPanelReportes()).thenReturn(panelReportes);
         
-        // Configurar los labels que cargarDatos() necesita - CRÍTICO
         when(vista.getLblTotalLibros()).thenReturn(lblTotalLibros);
         when(vista.getLblPrestamosActivos()).thenReturn(lblPrestamosActivos);
         when(vista.getLblAtrasados()).thenReturn(lblAtrasados);
         when(vista.getLblTotalUsuarios()).thenReturn(lblTotalUsuarios);
         
-        // Configurar datos por defecto para cargarDatos()
         when(controladorLibros.obtenerTotalLibros()).thenReturn(0);
         when(controladorPrestamos.obtenerPrestamosActivos()).thenReturn(0);
         when(controladorPrestamos.obtenerPrestamosAtrasados()).thenReturn(0);
         when(controladorUsuarios.obtenerTotalUsuarios()).thenReturn(0);
         
-        // Configurar todos los listeners
         doNothing().when(vista).agregarListenerPrincipal(any());
         doNothing().when(vista).agregarListenerPrestamos(any());
         doNothing().when(vista).agregarListenerUsuarios(any());
@@ -64,11 +60,9 @@ class ControladorVistaPrincipalTest {
         doNothing().when(vista).agregarListenerReportes(any());
         doNothing().when(vista).agregarListenerSalir(any());
         
-        // Configurar métodos void básicos
         doNothing().when(vista).setVisible(true);
         doNothing().when(vista).mostrarMensaje(anyString());
         
-        // Configurar confirmarSalida por defecto
         when(vista.confirmarSalida()).thenReturn(true);
     }
 
@@ -80,7 +74,6 @@ class ControladorVistaPrincipalTest {
         );
     }
 
-    // Tests existentes...
 
     @Test
     void testMostrarPanelPrestamos() {
@@ -149,9 +142,7 @@ class ControladorVistaPrincipalTest {
         controlador = crearControlador("admin");
         controlador.salirSistema();
 
-        // Verificar que NO se llama a System.exit
         verify(vista).confirmarSalida();
-        // No debería salir del sistema cuando confirmación es false
     }
 
     @Test
@@ -162,7 +153,6 @@ class ControladorVistaPrincipalTest {
         // Ejecutar
         controlador = crearControlador("admin");
 
-        // Verificar que se configuran todos los listeners
         verify(vista).agregarListenerPrincipal(any());
         verify(vista).agregarListenerPrestamos(any());
         verify(vista).agregarListenerUsuarios(any());
@@ -176,7 +166,6 @@ class ControladorVistaPrincipalTest {
         // Configurar mocks
         configurarMocksCompletos();
 
-        // Ejecutar con usuario null
         assertDoesNotThrow(() -> {
             controlador = new ControladorVistaPrincipal(
                 vista, null, 
@@ -185,7 +174,6 @@ class ControladorVistaPrincipalTest {
             );
         });
 
-        // Verificar que esAdmin funciona con null
         assertFalse(controlador.esAdmin());
     }
 
@@ -194,14 +182,107 @@ class ControladorVistaPrincipalTest {
         // Configurar mocks
         configurarMocksCompletos();
 
-        // Crear controlador con controladorReportes null
         controlador = new ControladorVistaPrincipal(
             vista, "admin", 
             controladorLibros, controladorPrestamos, 
-            controladorUsuarios, null  // controladorReportes null
+            controladorUsuarios, null 
         );
 
-        // Ejecutar - no debería lanzar excepción
         assertDoesNotThrow(() -> controlador.refrescarReportes());
     }
+    
+    
+    
+    @Test
+    void testRefrescarReportes_conControladorNoNull_llamaRefrescarReportes() {
+        // Configurar mocks
+        configurarMocksCompletos();
+        doNothing().when(controladorReportes).refrescarReportes();
+
+        // Ejecutar
+        controlador = crearControlador("admin");
+        controlador.refrescarReportes();
+
+        // Verificar que se llama al método refrescarReportes
+        verify(controladorReportes).refrescarReportes();
+    }
+
+    @Test
+    void testMostrarPanelPrincipal() {
+        // Configurar mocks
+        configurarMocksCompletos();
+        doNothing().when(vista).mostrarPanelPrincipal();
+
+        // Ejecutar
+        controlador = crearControlador("admin");
+        controlador.mostrarPanelPrincipal();
+
+        // Verificar
+        verify(vista).mostrarPanelPrincipal();
+    }
+
+    @Test
+    void testCargarDatos_conExcepcion_configuraValoresPorDefecto() {
+        // Configurar mocks
+        configurarMocksCompletos();
+        
+        // Simular excepción en uno de los métodos
+        when(controladorLibros.obtenerTotalLibros()).thenThrow(new RuntimeException("Error de base de datos"));
+        
+        // Ejecutar - no debería lanzar excepción
+        assertDoesNotThrow(() -> {
+            controlador = crearControlador("admin");
+        });
+
+        verify(lblTotalLibros).setText("0");
+        verify(lblPrestamosActivos).setText("0");
+        verify(lblAtrasados).setText("0");
+        verify(lblTotalUsuarios).setText("0");
+    }
+
+    @Test
+    void testCargarDatos_exitoso_configuraValoresCorrectos() {
+        // Configurar mocks
+        configurarMocksCompletos();
+        
+        // Configurar valores específicos
+        when(controladorLibros.obtenerTotalLibros()).thenReturn(150);
+        when(controladorPrestamos.obtenerPrestamosActivos()).thenReturn(25);
+        when(controladorPrestamos.obtenerPrestamosAtrasados()).thenReturn(3);
+        when(controladorUsuarios.obtenerTotalUsuarios()).thenReturn(75);
+
+        // Ejecutar
+        controlador = crearControlador("admin");
+
+        // Verificar que los labels tienen los valores correctos
+        verify(lblTotalLibros).setText("150");
+        verify(lblPrestamosActivos).setText("25");
+        verify(lblAtrasados).setText("3");
+        verify(lblTotalUsuarios).setText("75");
+    }
+
+    @Test
+    void testEsAdmin_conUsuarioAdmin_retornaTrue() {
+        // Configurar mocks
+        configurarMocksCompletos();
+
+        // Ejecutar con usuario "admin"
+        controlador = crearControlador("admin");
+
+        // Verificar
+        assertTrue(controlador.esAdmin());
+    }
+
+    @Test
+    void testEsAdmin_conUsuarioNoAdmin_retornaFalse() {
+        // Configurar mocks
+        configurarMocksCompletos();
+
+        // Ejecutar con usuario no admin
+        controlador = crearControlador("empleado");
+
+        // Verificar
+        assertFalse(controlador.esAdmin());
+    }
+
 }

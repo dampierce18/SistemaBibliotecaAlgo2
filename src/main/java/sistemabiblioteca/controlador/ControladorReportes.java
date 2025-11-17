@@ -2,6 +2,8 @@ package sistemabiblioteca.controlador;
 
 import sistemabiblioteca.dao.ReporteDAO;
 import sistemabiblioteca.vista.PanelReportes;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +18,50 @@ public class ControladorReportes {
     ControladorReportes(PanelReportes vista, ReporteDAO reporteDAO) {
         this.vista = vista;
         this.reporteDAO = reporteDAO;
+        configurarEventos();
         cargarTodosLosReportes();
+    }
+    
+    // Nuevo método para configurar los eventos
+    private void configurarEventos() {
+        // Configurar el botón de actualizar
+        vista.getBtnActualizar().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarReportes();
+            }
+        });
+    }
+    
+    // Método para actualizar todos los reportes con feedback visual
+    private void actualizarReportes() {
+        try {
+            // Mostrar estado de "cargando" en el botón
+            vista.iniciarActualizacion();
+            
+            // Ejecutar en un hilo separado para no bloquear la interfaz
+            new Thread(() -> {
+                try {
+                    // Actualizar todos los reportes
+                    cargarResumenGeneral();
+                    cargarLibrosMasPrestados();
+                    cargarUsuariosMasActivos();
+                    cargarPrestamosPorMes();
+                    cargarSituacionActual();
+                    
+                } catch (Exception ex) {
+                    // Mostrar error en el EDT
+                        vista.mostrarError("Error al actualizar reportes: " + ex.getMessage());
+                } finally {
+                    // Restaurar el botón en el EDT
+                        vista.finalizarActualizacion();
+                }
+            }).start();
+            
+        } catch (Exception ex) {
+            vista.mostrarError("Error al iniciar actualización: " + ex.getMessage());
+            vista.finalizarActualizacion();
+        }
     }
     
     public void cargarTodosLosReportes() {
@@ -92,7 +137,6 @@ public class ControladorReportes {
     }
     
     public void refrescarReportes() {
-		cargarTodosLosReportes();
-	}
-    
+        actualizarReportes();
+    }
 }

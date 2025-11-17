@@ -6,11 +6,10 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-
 public class PanelReportes extends JPanel {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private JTabbedPane tabbedPane;
+    private JTabbedPane tabbedPane;
     
     private JTable tableLibrosPrestados;
     private JTable tableUsuariosActivos;
@@ -22,23 +21,48 @@ public class PanelReportes extends JPanel {
     private JLabel lblPrestamosAtrasados;
     private JLabel lblUsuariosSancionados;
     private JLabel lblMultasPendientes;
-
     
+    private JButton btnActualizar;
+    private JPanel panelBotones;
+
     public PanelReportes() {
         setLayout(new BorderLayout(0, 0));
         inicializarComponentes();
     }
     
     private void inicializarComponentes() {
-        JPanel panelTitulo = new JPanel();
+        JPanel panelTitulo = new JPanel(new BorderLayout());
         panelTitulo.setBackground(new Color(70, 130, 180));
-        panelTitulo.setPreferredSize(new Dimension(10, 60));
+        panelTitulo.setPreferredSize(new Dimension(10, 80));
         add(panelTitulo, BorderLayout.NORTH);
         
+        // Panel para el título
+        JPanel panelTituloCentro = new JPanel();
+        panelTituloCentro.setBackground(new Color(70, 130, 180));
         JLabel lblTitulo = new JLabel("Reportes del Sistema - Módulo Administrador");
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        panelTitulo.add(lblTitulo);
+        panelTituloCentro.add(lblTitulo);
+        
+        // Panel para el botón de actualizar
+        panelBotones = new JPanel();
+        panelBotones.setBackground(new Color(70, 130, 180));
+        panelBotones.setBorder(new EmptyBorder(5, 10, 5, 10));
+        
+        btnActualizar = new JButton("Actualizar Reportes");
+        // Si tienes un ícono de refresh, puedes descomentar esta línea:
+        // btnActualizar.setIcon(new ImageIcon(getClass().getResource("/recursos/refresh.png")));
+        btnActualizar.setBackground(new Color(34, 139, 34)); // Verde
+        btnActualizar.setForeground(Color.BLACK);
+        btnActualizar.setFont(new Font("Arial", Font.BOLD, 12));
+        btnActualizar.setFocusPainted(false);
+        btnActualizar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        panelBotones.add(btnActualizar);
+        
+        // Agregar componentes al panel de título
+        panelTitulo.add(panelTituloCentro, BorderLayout.CENTER);
+        panelTitulo.add(panelBotones, BorderLayout.EAST);
         
         tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         add(tabbedPane, BorderLayout.CENTER);
@@ -50,6 +74,7 @@ public class PanelReportes extends JPanel {
         tabbedPane.addTab("Situación Actual", crearPanelSituacionActual());
     }
     
+    // Los métodos crearPanel... existentes permanecen igual
     private JPanel crearPanelResumenGeneral() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -97,16 +122,15 @@ public class PanelReportes extends JPanel {
         lblInstrucciones.setBorder(new EmptyBorder(0, 0, 10, 0));
         panel.add(lblInstrucciones, BorderLayout.NORTH);
         
-        // Tabla de libros más prestados
         JScrollPane scrollPane = new JScrollPane();
         tableLibrosPrestados = new JTable();
         tableLibrosPrestados.setModel(new DefaultTableModel(
             new Object[][] {},
             new String[] {"Posición", "Título", "Autor", "Préstamos", "Disponibles"}
         ) {
-			private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-			@Override
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
@@ -132,9 +156,9 @@ public class PanelReportes extends JPanel {
             new Object[][] {},
             new String[] {"Posición", "Usuario", "Préstamos", "Atrasos", "Sanciones"}
         ) {
-			private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-			@Override
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
@@ -160,9 +184,9 @@ public class PanelReportes extends JPanel {
             new Object[][] {},
             new String[] {"Mes", "Total Préstamos", "Préstamos Activos", "Atrasos", "Tasa Devolución"}
         ) {
-			private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-			@Override
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
@@ -188,9 +212,9 @@ public class PanelReportes extends JPanel {
             new Object[][] {},
             new String[] {"Tipo", "Descripción", "Cantidad", "Estado", "Acción Requerida"}
         ) {
-			private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-			@Override
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
@@ -202,6 +226,29 @@ public class PanelReportes extends JPanel {
         return panel;
     }
     
+    // Métodos getter para el controlador
+    public JButton getBtnActualizar() {
+        return btnActualizar;
+    }
+    
+    public JTabbedPane getTabbedPane() {
+        return tabbedPane;
+    }
+    
+    // Métodos para controlar el estado del botón durante la actualización
+    public void iniciarActualizacion() {
+        btnActualizar.setEnabled(false);
+        btnActualizar.setText("Actualizando...");
+        btnActualizar.setBackground(Color.BLACK);
+    }
+    
+    public void finalizarActualizacion() {
+        btnActualizar.setEnabled(true);
+        btnActualizar.setText("Actualizar Reportes");
+        btnActualizar.setBackground(Color.BLACK);
+    }
+    
+    // Los demás métodos existentes permanecen igual...
     public void mostrarMensaje(String mensaje, int tipo) {
         JOptionPane.showMessageDialog(this, mensaje, "Mensaje", tipo);
     }

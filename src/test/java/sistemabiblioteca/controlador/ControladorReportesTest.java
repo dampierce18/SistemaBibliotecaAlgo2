@@ -22,21 +22,34 @@ class ControladorReportesTest {
     @Mock
     ReporteDAO reporteDAO;
 
+    @Mock
+    javax.swing.JButton btnActualizar; 
+
     private ControladorReportes controlador;
 
     @BeforeEach
     void configurar() {
+        when(vista.getBtnActualizar()).thenReturn(btnActualizar);
+        
         controlador = new ControladorReportes(vista, reporteDAO);
     }
 
     @Test
     void testConstructor_cargaTodosLosReportes() {
-        // Verificar que se cargan todos los reportes en el constructor
+      
         verify(reporteDAO).obtenerResumenMes();
         verify(reporteDAO).obtenerLibrosMasPrestados();
         verify(reporteDAO).obtenerUsuariosMasActivos();
         verify(reporteDAO).obtenerPrestamosPorMes();
         verify(reporteDAO).obtenerSituacionActual();
+        
+
+        verify(btnActualizar).addActionListener(any(java.awt.event.ActionListener.class));
+    }
+
+    @Test
+    void testConfigurarEventos_agregaActionListenerAlBoton() {
+        verify(btnActualizar).addActionListener(any(java.awt.event.ActionListener.class));
     }
 
     @Test
@@ -78,7 +91,6 @@ class ControladorReportesTest {
         
         Map<String, Integer> resumenMock = Map.of(
             "prestamos_mes", 8
-            // Los demás valores faltan
         );
         
         when(reporteDAO.obtenerResumenMes()).thenReturn(resumenMock);
@@ -215,13 +227,18 @@ class ControladorReportesTest {
         verify(vista).mostrarError("Error cargando situación actual: Error de BD");
         verify(vista).mostrarSituacionActual(List.of());
     }
-
     @Test
     void testRefrescarReportes_llamaCargarTodosLosReportes() {
         clearInvocations(vista, reporteDAO);
         
-        controlador.refrescarReportes();
-
+        when(reporteDAO.obtenerResumenMes()).thenReturn(Map.of());
+        when(reporteDAO.obtenerLibrosMasPrestados()).thenReturn(List.of());
+        when(reporteDAO.obtenerUsuariosMasActivos()).thenReturn(List.of());
+        when(reporteDAO.obtenerPrestamosPorMes()).thenReturn(List.of());
+        when(reporteDAO.obtenerSituacionActual()).thenReturn(List.of());
+        
+        controlador.cargarTodosLosReportes();
+        
         verify(reporteDAO).obtenerResumenMes();
         verify(reporteDAO).obtenerLibrosMasPrestados();
         verify(reporteDAO).obtenerUsuariosMasActivos();
@@ -229,6 +246,14 @@ class ControladorReportesTest {
         verify(reporteDAO).obtenerSituacionActual();
     }
 
+    @Test
+    void testRefrescarReportes_iniciaActualizacion() {
+        clearInvocations(vista);
+        
+        controlador.refrescarReportes();
+        
+        verify(vista).iniciarActualizacion();
+    }
     @Test
     void testCargarResumenGeneral_mapaVacio_usaValoresPorDefecto() {
         clearInvocations(vista, reporteDAO);
@@ -251,4 +276,6 @@ class ControladorReportesTest {
         verify(vista).mostrarLibrosPrestados(List.of());
         verify(vista, never()).mostrarError(anyString());
     }
+    
+    
 }
