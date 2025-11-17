@@ -6,7 +6,7 @@ Esta guía detalla los pasos para configurar y ejecutar el proyecto del Sistema 
 **Para desarrollo:**
 Asegúrese de tener instalado el siguiente software en su sistema:
 
-* **Java JDK:** El proyecto está configurado para **Java 21**
+* **Java JDK:** El proyecto está configurado para **Java 21** https://download.oracle.com/java/21/archive/jdk-21.0.8_windows-x64_bin.exe
 * **Apache Maven:** Versión 3.6 o superior, para la gestión de dependencias y construcción del proyecto.
 * **Git:** Para clonar el repositorio.
 * **Un IDE (Recomendado):** El proyecto incluye archivos de configuración para **Eclipse**, pero cualquier IDE compatible con Maven (como IntelliJ IDEA o VS Code) funcionará.
@@ -76,3 +76,4 @@ El sistema está diseñado para funcionar "de caja" (out-of-the-box):
 1.  Asegúrese de tener Java 21 instalado (use el instalador incluido si es necesario)
 2.  Navegue a la carpeta biblioteca/
 3.  Haga doble clic en SistemaBiblioteca.jar
+
