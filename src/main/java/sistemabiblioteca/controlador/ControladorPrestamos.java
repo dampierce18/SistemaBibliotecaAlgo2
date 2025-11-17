@@ -40,7 +40,6 @@ public class ControladorPrestamos {
     
     void realizarPrestamo() {
         try {
-            // Validaciones
             if (vista.getLibroId().isEmpty() || vista.getUsuarioId().isEmpty()) {
                 vista.mostrarMensaje("ID Libro e ID Usuario son obligatorios", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -50,7 +49,6 @@ public class ControladorPrestamos {
             int usuarioId = Integer.parseInt(vista.getUsuarioId());
             int diasPrestamo = Integer.parseInt(vista.getDiasPrestamo());
             
-            // Verificar que el libro existe y tiene ejemplares disponibles
             var libro = libroDAO.obtenerLibroPorId(libroId);
             if (libro == null) {
                 vista.mostrarMensaje("El libro con ID " + libroId + " no existe", JOptionPane.ERROR_MESSAGE);
@@ -62,22 +60,18 @@ public class ControladorPrestamos {
                 return;
             }
             
-            // Verificar que el usuario existe
             var usuario = usuarioDAO.obtenerUsuarioPorId(usuarioId);
             if (usuario == null) {
                 vista.mostrarMensaje("El usuario con ID " + usuarioId + " no existe", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
-            // Crear préstamo
             LocalDate fechaPrestamo = LocalDate.now();
             LocalDate fechaDevolucion = fechaPrestamo.plusDays(diasPrestamo);
             
             Prestamo prestamo = new Prestamo(libroId, usuarioId, fechaPrestamo, fechaDevolucion);
             
-            // Guardar en base de datos
             if (prestamoDAO.realizarPrestamo(prestamo)) {
-                // Actualizar disponibilidad del libro
                 libro.setDisponibles(libro.getDisponibles() - 1);
                 libroDAO.actualizarLibro(libro);
                 
@@ -110,9 +104,7 @@ public class ControladorPrestamos {
         }
         
         try {
-            // Registrar devolución
             if (prestamoDAO.registrarDevolucion(prestamoId)) {
-                // Actualizar disponibilidad del libro
                 var libro = libroDAO.obtenerLibroPorId(libroId);
                 if (libro != null) {
                     libro.setDisponibles(libro.getDisponibles() + 1);

@@ -15,7 +15,6 @@ public class ControladorUsuarios {
         this(vista, new UsuarioDAO());
     }
     
-    // Constructor para testing
     ControladorUsuarios(PanelUsuarios vista, UsuarioDAO usuarioDAO) {
         this.vista = vista;
         this.usuarioDAO = usuarioDAO;
@@ -67,12 +66,10 @@ public class ControladorUsuarios {
     
     void guardarUsuario() {
         try {
-            // Validaciones
+            
             if (!vista.validarCamposUsuario()) {
                 return;
             }
-            
-            // Crear objeto Usuario
             Usuario usuario = new Usuario(
                 vista.getNombre(),
                 vista.getApellidoPaterno(),
@@ -80,9 +77,8 @@ public class ControladorUsuarios {
                 vista.getDomicilio(),
                 vista.getTelefono()
             );
-            
-            // Guardar en base de datos
-            if (usuarioDAO.insertarUsuario(usuario)) {
+            boolean resultado = usuarioDAO.insertarUsuario(usuario);
+            if (resultado) {
                 vista.mostrarMensaje("Usuario guardado exitosamente", JOptionPane.INFORMATION_MESSAGE);
                 vista.limpiarFormulario();
                 cargarUsuarios();

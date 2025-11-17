@@ -9,17 +9,14 @@ import java.util.List;
 public class LibroDAO {
     private Connection connection;
     
-    // ✅ CONSTRUCTOR ORIGINAL (para uso normal)
     public LibroDAO() {
         this.connection = null;
     }
     
-    // ✅ CONSTRUCTOR para testing (inyección de dependencias)
     public LibroDAO(Connection testConnection) {
         this.connection = testConnection;
     }
     
-    // ✅ MÉTODO PARA OBTENER CONEXIÓN
     private Connection getConnection() throws SQLException {
         if (this.connection != null) {
             return this.connection;
@@ -27,7 +24,6 @@ public class LibroDAO {
         return ConexionSQLite.getConnection();
     }
     
-    // ✅ INSERTAR LIBRO
     public boolean insertarLibro(Libro libro) {
         String sql = "INSERT INTO libros (titulo, anio, autor, categoria, editorial, total, disponibles) VALUES (?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement pstmt = null;
@@ -60,7 +56,6 @@ public class LibroDAO {
         }
     }
     
-    // ✅ OBTENER TODOS LOS LIBROS
     public List<Libro> obtenerTodosLosLibros() {
         List<Libro> libros = new ArrayList<>();
         String sql = "SELECT * FROM libros ORDER BY titulo";
@@ -91,7 +86,6 @@ public class LibroDAO {
         return libros;
     }
     
-    // ✅ ACTUALIZAR LIBRO
     public boolean actualizarLibro(Libro libro) {
         String sql = "UPDATE libros SET titulo=?, anio=?, autor=?, categoria=?, editorial=?, total=?, disponibles=? WHERE id=?";
         PreparedStatement pstmt = null;
@@ -121,7 +115,6 @@ public class LibroDAO {
         }
     }
     
-    // ✅ ELIMINAR LIBRO
     public boolean eliminarLibro(int id) {
         String sql = "DELETE FROM libros WHERE id=?";
         PreparedStatement pstmt = null;
@@ -143,7 +136,6 @@ public class LibroDAO {
         }
     }
     
-    // ✅ BUSCAR LIBROS
     public List<Libro> buscarLibros(String criterio, String valor) {
         List<Libro> libros = new ArrayList<>();
         String sql = "";
@@ -193,7 +185,6 @@ public class LibroDAO {
         return libros;
     }
     
-    // ✅ CONTAR TOTAL DE LIBROS
     public int contarTotalLibros() {
         String sql = "SELECT COUNT(*) as total FROM libros";
         Statement stmt = null;
@@ -222,7 +213,6 @@ public class LibroDAO {
         return 0;
     }
     
-    // ✅ OBTENER LIBRO POR ID
     public Libro obtenerLibroPorId(int id) {
         String sql = "SELECT * FROM libros WHERE id=?";
         PreparedStatement pstmt = null;
@@ -252,7 +242,6 @@ public class LibroDAO {
         return null;
     }
     
-    // ✅ CONVERTIR RESULTSET A LIBRO
     private Libro resultSetALibro(ResultSet rs) throws SQLException {
         return new Libro(
             rs.getInt("id"),

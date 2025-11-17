@@ -9,17 +9,14 @@ import java.util.List;
 public class UsuarioDAO {
     private Connection connection;
     
-    // ✅ CONSTRUCTOR ORIGINAL (para uso normal)
     public UsuarioDAO() {
         this.connection = null;
     }
     
-    // ✅ CONSTRUCTOR para testing (inyección de dependencias)
     public UsuarioDAO(Connection testConnection) {
         this.connection = testConnection;
     }
     
-    // ✅ MÉTODO PARA OBTENER CONEXIÓN
     private Connection getConnection() throws SQLException {
         if (this.connection != null) {
             return this.connection;
@@ -33,6 +30,7 @@ public class UsuarioDAO {
         
         try {
             Connection conn = getConnection();
+            
             pstmt = conn.prepareStatement(sql);
             
             pstmt.setString(1, usuario.getNombre());
@@ -44,6 +42,7 @@ public class UsuarioDAO {
             pstmt.setInt(7, usuario.getMontoSancion());
             
             int filasAfectadas = pstmt.executeUpdate();
+            
             return filasAfectadas > 0;
             
         } catch (SQLException e) {
@@ -190,7 +189,6 @@ public class UsuarioDAO {
             Connection conn = getConnection();
             pstmt = conn.prepareStatement(sql);
             
-            // Para ID usamos búsqueda exacta, para los otros usamos LIKE
             if ("ID".equals(criterio)) {
                 try {
                     pstmt.setInt(1, Integer.parseInt(valor));

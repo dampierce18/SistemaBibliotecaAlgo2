@@ -11,7 +11,6 @@ public class Prestamo {
     private LocalDate fechaDevolucionReal;
     private String estado; // "ACTIVO", "DEVUELTO", "ATRASADO"
     
-    // Constructores
     public Prestamo() {}
     
     public Prestamo(int libroId, int usuarioId, LocalDate fechaPrestamo, LocalDate fechaDevolucion) {

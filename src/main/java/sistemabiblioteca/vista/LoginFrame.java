@@ -17,19 +17,16 @@ public class LoginFrame extends JFrame {
     }
     
     private void initialize() {
-        // Configuración básica de la ventana
         setTitle("Acceso al Sistema - Biblioteca");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(350, 250);
         setLocationRelativeTo(null);
         setResizable(false);
         
-        // Usar un panel principal con BorderLayout
         getContentPane().setLayout(new BorderLayout(10, 10));
         JPanel contentPane = (JPanel) getContentPane();
         contentPane.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         
-        // Crear y agregar componentes
         crearComponentes();
     }
     
@@ -38,34 +35,28 @@ public class LoginFrame extends JFrame {
         getContentPane().add(panelPrincipal, BorderLayout.CENTER);
         panelPrincipal.setLayout(null);
         
-        // Título
         JLabel lblTitulo = new JLabel("Sistema de Biblioteca");
         lblTitulo.setBounds(64, 19, 206, 19);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 16));
         lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
         panelPrincipal.add(lblTitulo);
         
-        // Usuario - Label
         JLabel lblUsuario = new JLabel("Usuario:");
         lblUsuario.setBounds(69, 61, 60, 14);
         panelPrincipal.add(lblUsuario);
         
-        // Usuario - TextField
         txtUsuario = new JTextField(15);
         txtUsuario.setBounds(139, 58, 126, 20);
         panelPrincipal.add(txtUsuario);
         
-        // Contraseña - Label
         JLabel lblPassword = new JLabel("Contraseña:");
         lblPassword.setBounds(64, 92, 60, 14);
         panelPrincipal.add(lblPassword);
         
-        // Contraseña - PasswordField
         txtPassword = new JPasswordField(15);
         txtPassword.setBounds(139, 89, 126, 20);
         panelPrincipal.add(txtPassword);
         
-        // Botones
         JPanel panelBotones = new JPanel(new FlowLayout());
         panelBotones.setBounds(64, 153, 196, 33);
         btnLogin = new JButton("Entrar");
@@ -78,24 +69,22 @@ public class LoginFrame extends JFrame {
     }
     
     private void configurarEventos() {
-        // Evento Enter para facilitar el login
         txtUsuario.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                txtPassword.requestFocus(); //Enter redirige a password
+                txtPassword.requestFocus();
             }
         });
         
         txtPassword.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                btnLogin.doClick(); //Enter = click en Entrar
+                btnLogin.doClick(); 
             }
         });
         
     }
     
-    // Getters 
     public JTextField getTxtUsuario() { return txtUsuario; }
     public JPasswordField getTxtPassword() { return txtPassword; }
     public JButton getBtnLogin() { return btnLogin; }

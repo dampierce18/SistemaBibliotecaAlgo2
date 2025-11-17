@@ -11,14 +11,23 @@ public class ControladorVistaPrincipal {
     private String usuarioLogueado;
     
     public ControladorVistaPrincipal(String usuarioLogueado) {
-        this(new VistaPrincipal(), usuarioLogueado,
-             new ControladorLibros(new VistaPrincipal().getPanelLibros()),
-             new ControladorPrestamos(new VistaPrincipal().getPanelPrestamos()),
-             new ControladorUsuarios(new VistaPrincipal().getPanelUsuarios()),
-             new ControladorReportes(new VistaPrincipal().getPanelReportes()));
+        this.vista = new VistaPrincipal();
+        this.usuarioLogueado = usuarioLogueado;
+        
+        this.controladorLibros = new ControladorLibros(vista.getPanelLibros());
+        this.controladorPrestamos = new ControladorPrestamos(vista.getPanelPrestamos());
+        this.controladorUsuarios = new ControladorUsuarios(vista.getPanelUsuarios());
+        this.controladorReportes = new ControladorReportes(vista.getPanelReportes());
+        
+        configurarPermisos();
+        cargarDatos();
+        configurarEventos();
+        vista.setVisible(true);
+        
+        String rol = esAdmin() ? "Administrador" : "Empleado";
+        vista.mostrarMensaje("Bienvenido: " + usuarioLogueado + " (" + rol + ")");
     }
     
-    // Constructor para testing - con inyección de dependencias
     ControladorVistaPrincipal(VistaPrincipal vista, String usuarioLogueado,
                              ControladorLibros controladorLibros,
                              ControladorPrestamos controladorPrestamos,
@@ -93,7 +102,6 @@ public class ControladorVistaPrincipal {
         }
     }
     
-    // Métodos para mostrar cada panel
     void mostrarPanelPrincipal() {
         vista.mostrarPanelPrincipal();
         System.out.println("Mostrando panel Principal");

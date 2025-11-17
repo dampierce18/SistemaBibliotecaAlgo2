@@ -7,20 +7,15 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class PanelPrestamos extends JPanel {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane tabbedPane;
     private JTable tablePrestamosActivos;
     private JTable tableHistorialPrestamos;
     
-    // Campos para nuevo préstamo
     private JTextField txtLibroId;
     private JTextField txtUsuarioId;
     private JTextField txtDiasPrestamo;
     
-    // Botones
     private JButton btnRealizarPrestamo;
     private JButton btnRegistrarDevolucion;
     private JButton btnActualizarPrestamos;
@@ -32,7 +27,6 @@ public class PanelPrestamos extends JPanel {
     }
     
     private void inicializarComponentes() {
-        // Panel de título
         JPanel panelTitulo = new JPanel();
         panelTitulo.setBackground(new Color(70, 130, 180));
         panelTitulo.setPreferredSize(new Dimension(10, 60));
@@ -45,17 +39,13 @@ public class PanelPrestamos extends JPanel {
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
         panelTitulo.add(lblTitulo);
         
-        // Panel de pestañas
         tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         add(tabbedPane, BorderLayout.CENTER);
         
-        // Pestaña 1: Realizar Préstamo
         tabbedPane.addTab("Nuevo Préstamo", crearPanelNuevoPrestamo());
         
-        // Pestaña 2: Préstamos Activos
         tabbedPane.addTab("Préstamos Activos", crearPanelPrestamosActivos());
         
-        // Pestaña 3: Historial
         tabbedPane.addTab("Historial", crearPanelHistorial());
     }
     
@@ -63,12 +53,11 @@ public class PanelPrestamos extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
         
-        // Formulario
         JPanel panelFormulario = new JPanel(new GridLayout(7, 2, 10, 10));
         
         txtLibroId = new JTextField();
         txtUsuarioId = new JTextField();
-        txtDiasPrestamo = new JTextField("15"); // Valor por defecto
+        txtDiasPrestamo = new JTextField("15"); 
         
         panelFormulario.add(new JLabel("ID Libro:"));
         panelFormulario.add(txtLibroId);
@@ -76,12 +65,11 @@ public class PanelPrestamos extends JPanel {
         panelFormulario.add(txtUsuarioId);
         panelFormulario.add(new JLabel("Días de Préstamo:"));
         panelFormulario.add(txtDiasPrestamo);
-        panelFormulario.add(new JLabel("")); // Espacio vacío
-        panelFormulario.add(new JLabel("")); // Espacio vacío
+        panelFormulario.add(new JLabel("")); 
+        panelFormulario.add(new JLabel("")); 
         
         panel.add(panelFormulario, BorderLayout.CENTER);
         
-        // Botones
         JPanel panelBotones = new JPanel();
         btnRealizarPrestamo = new JButton("Realizar Préstamo");
         btnLimpiarFormulario = new JButton("Limpiar");
@@ -97,7 +85,6 @@ public class PanelPrestamos extends JPanel {
     private JPanel crearPanelPrestamosActivos() {
         JPanel panel = new JPanel(new BorderLayout());
         
-        // Botones
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
         btnRegistrarDevolucion = new JButton("Registrar Devolución");
         btnActualizarPrestamos = new JButton("Actualizar Lista");
@@ -107,7 +94,6 @@ public class PanelPrestamos extends JPanel {
         
         panel.add(panelBotones, BorderLayout.NORTH);
         
-        // Tabla
         JScrollPane scrollPane = new JScrollPane();
         tablePrestamosActivos = new JTable();
         tablePrestamosActivos.setModel(new DefaultTableModel(
@@ -124,7 +110,6 @@ public class PanelPrestamos extends JPanel {
     private JPanel crearPanelHistorial() {
         JPanel panel = new JPanel(new BorderLayout());
         
-        // Tabla
         JScrollPane scrollPane = new JScrollPane();
         tableHistorialPrestamos = new JTable();
         tableHistorialPrestamos.setModel(new DefaultTableModel(
@@ -138,7 +123,6 @@ public class PanelPrestamos extends JPanel {
         return panel;
     }
     
-    // Getters para los datos del formulario
     public String getLibroId() { return txtLibroId.getText().trim(); }
     public String getUsuarioId() { return txtUsuarioId.getText().trim(); }
     public String getDiasPrestamo() { return txtDiasPrestamo.getText().trim(); }
@@ -157,7 +141,6 @@ public class PanelPrestamos extends JPanel {
         return tableHistorialPrestamos.getSelectedRow();
     }
     
-    // Métodos para manipular tablas
     public void actualizarTablaPrestamosActivos(Object[][] datos) {
         DefaultTableModel modelo = (DefaultTableModel) tablePrestamosActivos.getModel();
         modelo.setRowCount(0);
@@ -194,14 +177,12 @@ public class PanelPrestamos extends JPanel {
         return (Integer) tablePrestamosActivos.getValueAt(fila, 1);
     }
     
-    // Métodos para limpiar formulario
     public void limpiarFormulario() {
         txtLibroId.setText("");
         txtUsuarioId.setText("");
         txtDiasPrestamo.setText("15");
     }
     
-    // Métodos para agregar listeners
     public void agregarRealizarPrestamoListener(ActionListener listener) {
         btnRealizarPrestamo.addActionListener(listener);
     }

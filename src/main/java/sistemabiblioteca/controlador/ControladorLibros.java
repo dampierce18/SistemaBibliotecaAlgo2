@@ -33,12 +33,10 @@ public class ControladorLibros {
     
     public void guardarLibro() {
         try {
-            // Validaciones básicas
             if (!vista.validarCamposLibro()) {
                 return;
             }
             
-            // Crear objeto Libro
             Libro libro = new Libro(
                 0, // ID temporal (la BD lo auto-genera)
                 vista.getTitulo(),
@@ -50,7 +48,6 @@ public class ControladorLibros {
                 Integer.parseInt(vista.getEjemplaresTexto()) 
             );
             
-            // Guardar en base de datos
             if (libroDAO.insertarLibro(libro)) {
                 vista.mostrarMensaje("Libro guardado exitosamente", JOptionPane.INFORMATION_MESSAGE);
                 vista.limpiarFormulario();

@@ -10,17 +10,14 @@ import java.util.Map;
 public class ReporteDAO {
     private Connection connection;
     
-    // ✅ CONSTRUCTOR ORIGINAL (para uso normal)
     public ReporteDAO() {
         this.connection = null;
     }
     
-    // ✅ CONSTRUCTOR para testing (inyección de dependencias)
     public ReporteDAO(Connection testConnection) {
         this.connection = testConnection;
     }
     
-    // ✅ MÉTODO PARA OBTENER CONEXIÓN
     private Connection getConnection() throws SQLException {
         if (this.connection != null) {
             return this.connection;
@@ -28,7 +25,6 @@ public class ReporteDAO {
         return ConexionSQLite.getConnection();
     }
     
-    // Reporte 1: Resumen General del Mes
     public Map<String, Integer> obtenerResumenMes() {
         Map<String, Integer> resumen = new HashMap<>();
         
@@ -50,28 +46,22 @@ public class ReporteDAO {
             Connection conn = getConnection();
             stmt = conn.createStatement();
             
-            // Total préstamos del mes
             rs = stmt.executeQuery(sqlPrestamosMes);
             resumen.put("prestamos_mes", rs.getInt("total"));
             
-            // Préstamos activos
             rs = stmt.executeQuery(sqlPrestamosActivos);
             resumen.put("prestamos_activos", rs.getInt("total"));
             
-            // Préstamos atrasados
             rs = stmt.executeQuery(sqlPrestamosAtrasados);
             resumen.put("prestamos_atrasados", rs.getInt("total"));
             
-            // Usuarios sancionados
             rs = stmt.executeQuery(sqlUsuariosSancionados);
             resumen.put("usuarios_sancionados", rs.getInt("total"));
             
-            // Multas pendientes
             rs = stmt.executeQuery(sqlMultasPendientes);
             resumen.put("multas_pendientes", rs.getInt("total"));
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -84,7 +74,6 @@ public class ReporteDAO {
         return resumen;
     }
     
-    // Reporte 2: Libros más prestados (último mes)
     public List<Object[]> obtenerLibrosMasPrestados() {
         List<Object[]> resultados = new ArrayList<>();
         
@@ -120,7 +109,6 @@ public class ReporteDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -133,7 +121,6 @@ public class ReporteDAO {
         return resultados;
     }
     
-    // Reporte 3: Usuarios más activos (último mes)
     public List<Object[]> obtenerUsuariosMasActivos() {
         List<Object[]> resultados = new ArrayList<>();
         
@@ -171,7 +158,6 @@ public class ReporteDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -184,7 +170,6 @@ public class ReporteDAO {
         return resultados;
     }
 
-    // Reporte 4: Préstamos por mes (últimos 6 meses)
     public List<Object[]> obtenerPrestamosPorMes() {
         List<Object[]> resultados = new ArrayList<>();
         
@@ -223,7 +208,6 @@ public class ReporteDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -236,11 +220,9 @@ public class ReporteDAO {
         return resultados;
     }
 
-    // Reporte 5: Situación actual (alertas y pendientes)
     public List<Object[]> obtenerSituacionActual() {
         List<Object[]> resultados = new ArrayList<>();
         
-        // Alertas de préstamos atrasados
         String sqlAtrasados = """
             SELECT 'Préstamo Atrasado' as tipo,
                    'Préstamo vencido sin devolver' as descripcion,
@@ -251,7 +233,6 @@ public class ReporteDAO {
             WHERE estado = 'ACTIVO' AND fecha_devolucion < date('now')
             """;
         
-        // Alertas de usuarios sancionados
         String sqlSancionados = """
             SELECT 'Usuario Sancionado' as tipo,
                    'Usuario con sanción activa' as descripcion,
@@ -262,7 +243,6 @@ public class ReporteDAO {
             WHERE sanciones > 0
             """;
         
-        // Alertas de libros sin disponibilidad
         String sqlSinDisponibles = """
             SELECT 'Sin Disponibles' as tipo,
                    'Libro sin ejemplares disponibles' as descripcion,
@@ -280,7 +260,6 @@ public class ReporteDAO {
             Connection conn = getConnection();
             stmt = conn.createStatement();
             
-            // Préstamos atrasados
             rs = stmt.executeQuery(sqlAtrasados);
             if (rs.next() && rs.getInt("cantidad") > 0) {
                 Object[] fila = {
@@ -293,7 +272,6 @@ public class ReporteDAO {
                 resultados.add(fila);
             }
             
-            // Usuarios sancionados
             rs = stmt.executeQuery(sqlSancionados);
             if (rs.next() && rs.getInt("cantidad") > 0) {
                 Object[] fila = {
@@ -306,7 +284,6 @@ public class ReporteDAO {
                 resultados.add(fila);
             }
             
-            // Libros sin disponibles
             rs = stmt.executeQuery(sqlSinDisponibles);
             if (rs.next() && rs.getInt("cantidad") > 0) {
                 Object[] fila = {
@@ -319,7 +296,6 @@ public class ReporteDAO {
                 resultados.add(fila);
             }
             
-            // Si no hay alertas, mostrar mensaje positivo
             if (resultados.isEmpty()) {
                 Object[] fila = {
                     "Todo en Orden",
@@ -332,7 +308,6 @@ public class ReporteDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }

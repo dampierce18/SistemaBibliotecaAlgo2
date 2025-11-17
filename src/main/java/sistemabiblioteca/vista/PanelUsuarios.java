@@ -9,15 +9,11 @@ import java.util.List;
 import sistemabiblioteca.modelo.Usuario;
 
 public class PanelUsuarios extends JPanel {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane tabbedPane;
     private JTable tableUsuarios;
     private JTable tableBusquedaUsuarios;
     
-    // Campos del formulario
     private JTextField txtNombre;
     private JTextField txtApellidoPaterno;
     private JTextField txtApellidoMaterno;
@@ -25,7 +21,6 @@ public class PanelUsuarios extends JPanel {
     private JTextField txtTelefono;
     private JTextField txtBusquedaUsuario;
 
-    // Botones
     private JButton btnGuardarUsuario;
     private JButton btnLimpiarUsuario;
     private JButton btnEditar;
@@ -43,13 +38,9 @@ public class PanelUsuarios extends JPanel {
     public void setModoEmpleado() {
         btnEditar.setVisible(false);
         btnEliminar.setVisible(false);
-        
-        // Tabla de solo lectura
-        //tableUsuarios.setEnabled(true); // Pero permitir ver
     }
     
     private void inicializarComponentes() {
-        // Panel de título
         JPanel panelTitulo = new JPanel();
         panelTitulo.setBackground(new Color(70, 130, 180));
         panelTitulo.setPreferredSize(new Dimension(10, 60));
@@ -62,24 +53,19 @@ public class PanelUsuarios extends JPanel {
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
         panelTitulo.add(lblTitulo, BorderLayout.CENTER);
         
-        // Panel de pestañas
         tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         add(tabbedPane, BorderLayout.CENTER);
         
-        // Pestaña 1: Lista de usuarios
         tabbedPane.addTab("Lista de Usuarios", crearPanelListaUsuarios());
         
-        // Pestaña 2: Agregar usuario
         tabbedPane.addTab("Agregar Usuario", crearPanelAgregarUsuario());
         
-     // Pestaña 3: Buscar usuario
         tabbedPane.addTab("Buscar Usuario", crearPanelBuscarUsuario());
     }
     
     private JPanel crearPanelListaUsuarios() {
         JPanel panel = new JPanel(new BorderLayout());
         
-        // Botones superiores en lista
         JPanel panelBotonesLista = new JPanel();
         FlowLayout fl_panelBotonesLista = (FlowLayout) panelBotonesLista.getLayout();
         fl_panelBotonesLista.setAlignment(FlowLayout.LEFT);
@@ -94,7 +80,6 @@ public class PanelUsuarios extends JPanel {
         btnActualizar = new JButton("Actualizar Lista");
         panelBotonesLista.add(btnActualizar);
         
-        // Tabla de usuarios
         JScrollPane scrollPane = new JScrollPane();
         tableUsuarios = new JTable();
         tableUsuarios.setModel(new DefaultTableModel(
@@ -111,7 +96,6 @@ public class PanelUsuarios extends JPanel {
     private JPanel crearPanelAgregarUsuario() {
         JPanel panel = new JPanel(new BorderLayout());
         
-        // Formulario
         JPanel panelFormulario = new JPanel(new GridLayout(7, 2, 10, 10));
         panelFormulario.setBorder(new EmptyBorder(20, 20, 20, 20));
         
@@ -136,7 +120,6 @@ public class PanelUsuarios extends JPanel {
         
         panel.add(panelFormulario, BorderLayout.CENTER);
         
-        // Botones
         JPanel panelBotones = new JPanel();
         btnGuardarUsuario = new JButton("Guardar Usuario");
         btnLimpiarUsuario = new JButton("Limpiar Campos");
@@ -151,7 +134,6 @@ public class PanelUsuarios extends JPanel {
     private JPanel crearPanelBuscarUsuario() {
         JPanel panel = new JPanel(new BorderLayout(0, 0));
         
-        // Panel de búsqueda
         JPanel panelBusqueda = new JPanel();
         panelBusqueda.setBorder(new EmptyBorder(20, 20, 20, 20));
         panel.add(panelBusqueda, BorderLayout.NORTH);
@@ -173,7 +155,6 @@ public class PanelUsuarios extends JPanel {
         btnBuscarUsuario = new JButton("Buscar");
         panelBusqueda.add(btnBuscarUsuario);
         
-        // Tabla de resultados
         JScrollPane scrollPaneBusqueda = new JScrollPane();
         panel.add(scrollPaneBusqueda, BorderLayout.CENTER);
         
@@ -193,7 +174,6 @@ public class PanelUsuarios extends JPanel {
         
         return panel;
     }
-    // Getters para los datos del formulario
     public String getNombre() { return txtNombre.getText().trim(); }
     public String getApellidoPaterno() { return txtApellidoPaterno.getText().trim(); }
     public String getApellidoMaterno() { return txtApellidoMaterno.getText().trim(); }
@@ -202,7 +182,6 @@ public class PanelUsuarios extends JPanel {
     public String getTextoBusquedaUsuario() { return txtBusquedaUsuario.getText().trim(); }
     public String getCriterioBusquedaUsuario() { return comboBoxCriterioUsuario.getSelectedItem().toString(); }
     
-    // Métodos para manipular la tabla
     public void actualizarTablaUsuarios(Object[][] datos) {
         DefaultTableModel modelo = (DefaultTableModel) tableUsuarios.getModel();
         modelo.setRowCount(0);
@@ -290,7 +269,6 @@ public class PanelUsuarios extends JPanel {
         actualizarTablaBusquedaUsuarios(datos);
     }
     
-    // Método para limpiar formulario
     public void limpiarFormulario() {
         txtNombre.setText("");
         txtApellidoPaterno.setText("");
@@ -299,7 +277,6 @@ public class PanelUsuarios extends JPanel {
         txtTelefono.setText("");
     }
     
-    // Getters para las tablas
     public JTable getTableBusquedaUsuarios() {
         return tableBusquedaUsuarios;
     }
@@ -308,7 +285,6 @@ public class PanelUsuarios extends JPanel {
         return tableBusquedaUsuarios.getSelectedRow();
     }
     
-    // Métodos para agregar listeners
     public void agregarGuardarUsuarioListener(ActionListener listener) {
         btnGuardarUsuario.addActionListener(listener);
     }
@@ -325,7 +301,6 @@ public class PanelUsuarios extends JPanel {
         return tableUsuarios.getSelectedRow();
     }
 
-    // Métodos para agregar listeners de los nuevos botones
     public void agregarEditarUsuarioListener(ActionListener listener) {
         btnEditar.addActionListener(listener);
     }

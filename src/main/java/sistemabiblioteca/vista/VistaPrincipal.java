@@ -7,9 +7,6 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class VistaPrincipal extends JFrame {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel panelLateral;
     private JPanel panelContenido;
@@ -20,7 +17,6 @@ public class VistaPrincipal extends JFrame {
     private JLabel lblPrestamosActivos;
     private JLabel lblAtrasados;
     
-    // Botones del menú lateral
     private JButton btnPrincipal;
     private JButton btnPrestamos;
     private JButton btnUsuarios;
@@ -28,7 +24,6 @@ public class VistaPrincipal extends JFrame {
     private JButton btnReportes;
     private JButton btnSalir;
     
-    // Paneles de contenido
     private JPanel panelPrincipal;
     private PanelPrestamos panelPrestamos;
     private PanelUsuarios panelUsuarios;
@@ -44,22 +39,20 @@ public class VistaPrincipal extends JFrame {
         setTitle("Sistema de Gestión de Biblioteca");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 600);
-        setLocationRelativeTo(null); // Centrar en la pantalla
+        setLocationRelativeTo(null); 
         setLayout(new BorderLayout());
     }
     
+   
     private void inicializarComponentes() {
-        // Crear panel lateral con botones
         panelLateral = crearPanelLateral();
         add(panelLateral, BorderLayout.WEST);
         
-        // Crear panel de contenido con CardLayout
         cardLayout = new CardLayout();
         panelContenido = new JPanel(cardLayout);
         inicializarPanelesContenido();
         add(panelContenido, BorderLayout.CENTER);
         
-        // Mostrar el panel principal por defecto
         cardLayout.show(panelContenido, "Principal");
     }
     
@@ -70,7 +63,6 @@ public class VistaPrincipal extends JFrame {
         panel.setBackground(new Color(240, 240, 240));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Usar los atributos de clase
         btnPrincipal = new JButton("Principal");
         panel.add(btnPrincipal);
         
@@ -96,7 +88,6 @@ public class VistaPrincipal extends JFrame {
 
     
     private void inicializarPanelesContenido() {
-        // Panel Principal
         panelPrincipal = crearPanelPrincipal();
         panelContenido.add(panelPrincipal, "Principal");
         
@@ -109,7 +100,6 @@ public class VistaPrincipal extends JFrame {
         panelLibros = new PanelLibros();
         panelContenido.add(panelLibros, "Libros");
         
-        // Panel Reportes (por implementar)
         panelReportes = new PanelReportes();
         panelContenido.add(panelReportes, "Reportes");
     }
@@ -202,7 +192,6 @@ public class VistaPrincipal extends JFrame {
     }
 
 
-    // Métodos para agregar listeners a los botones
     public void agregarListenerPrincipal(ActionListener listener) {
         btnPrincipal.addActionListener(listener);
     }
@@ -227,7 +216,6 @@ public class VistaPrincipal extends JFrame {
         btnSalir.addActionListener(listener);
     }
     
-    // Métodos para cambiar entre paneles
     public void mostrarPanelPrincipal() {
         cardLayout.show(panelContenido, "Principal");
     }
@@ -252,20 +240,17 @@ public class VistaPrincipal extends JFrame {
         cardLayout.show(panelContenido, "Reportes");
     }
     
-    // Getters para los paneles (para que el controlador pueda acceder)
     public JPanel getPanelPrincipal() { return panelPrincipal; }
     public PanelPrestamos getPanelPrestamos() { return panelPrestamos; }
     public PanelUsuarios getPanelUsuarios() { return panelUsuarios; }
     public PanelLibros getPanelLibros() { return panelLibros; }
     public PanelReportes getPanelReportes() { return panelReportes; }
-    //public JPanel getPanelReportes() { return panelReportes; }
     public JLabel getLblTotalLibros() { return lblTotalLibros; }
     public JLabel getLblTotalUsuarios() { return lblTotalUsuarios; }
     public JLabel getLblPrestamosActivos() { return lblPrestamosActivos; }
     public JLabel getLblAtrasados() { return lblAtrasados; }
     
     
- // En VistaPrincipal.java, agrega estos getters:
     public JButton getBtnReportes() {
         return btnReportes;
     }

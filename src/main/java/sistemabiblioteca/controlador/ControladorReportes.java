@@ -13,7 +13,6 @@ public class ControladorReportes {
         this(vista, new ReporteDAO());
     }
     
-    // Constructor para testing
     ControladorReportes(PanelReportes vista, ReporteDAO reporteDAO) {
         this.vista = vista;
         this.reporteDAO = reporteDAO;
@@ -66,7 +65,6 @@ public class ControladorReportes {
             
         } catch (Exception e) {
             vista.mostrarError("Error cargando usuarios más activos: " + e.getMessage());
-            // Mostrar datos vacíos o mensaje de error
             vista.mostrarUsuariosActivos(List.of());
         }
     }

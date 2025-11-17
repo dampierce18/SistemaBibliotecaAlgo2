@@ -9,9 +9,6 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 public class PanelLibros extends JPanel {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane tabbedPane;
     private JTable tableLibros;
@@ -39,7 +36,6 @@ public class PanelLibros extends JPanel {
     public PanelLibros() {
         setLayout(new BorderLayout(0, 0));
         
-        // Panel de título
         JPanel panelTitulo = new JPanel();
         panelTitulo.setBackground(new Color(70, 130, 180));
         panelTitulo.setPreferredSize(new Dimension(10, 60));
@@ -52,16 +48,13 @@ public class PanelLibros extends JPanel {
         lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
         panelTitulo.add(lblTitulo);
         
-        // Panel de pestañas
         tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         add(tabbedPane, BorderLayout.CENTER);
         
-        // Pestaña 1: Lista de libros
         JPanel panelLista = new JPanel();
         tabbedPane.addTab("Lista de Libros", null, panelLista, null);
         panelLista.setLayout(new BorderLayout(0, 0));
         
-        // Botones superiores en lista
         JPanel panelBotonesLista = new JPanel();
         FlowLayout fl_panelBotonesLista = (FlowLayout) panelBotonesLista.getLayout();
         fl_panelBotonesLista.setAlignment(FlowLayout.LEFT);
@@ -76,7 +69,6 @@ public class PanelLibros extends JPanel {
         btnActualizar = new JButton("Actualizar Lista");
         panelBotonesLista.add(btnActualizar);
         
-        // Tabla de libros
         JScrollPane scrollPaneLista = new JScrollPane();
         panelLista.add(scrollPaneLista, BorderLayout.CENTER);
         
@@ -93,7 +85,6 @@ public class PanelLibros extends JPanel {
         });
         scrollPaneLista.setViewportView(tableLibros);
         
-        // Pestaña 2: Agregar libro
         JPanel panelAgregar = new JPanel();
         tabbedPane.addTab("Agregar Libro", null, panelAgregar, null);
         panelAgregar.setLayout(new BorderLayout(0, 0));
@@ -102,8 +93,6 @@ public class PanelLibros extends JPanel {
         panelFormulario.setBorder(new EmptyBorder(20, 20, 20, 20));
         panelAgregar.add(panelFormulario, BorderLayout.CENTER);
         panelFormulario.setLayout(new GridLayout(7, 2, 10, 10));
-        
-        // Campos del formulario
         
         JLabel lblTitulo_1 = new JLabel("Título:");
         panelFormulario.add(lblTitulo_1);
@@ -149,7 +138,6 @@ public class PanelLibros extends JPanel {
         panelFormulario.add(txtEjemplares);
         txtEjemplares.setColumns(10);
         
-        // Botones en agregar
         JPanel panelBotonesAgregar = new JPanel();
         panelAgregar.add(panelBotonesAgregar, BorderLayout.SOUTH);
         
@@ -159,12 +147,10 @@ public class PanelLibros extends JPanel {
         btnLimpiar = new JButton("Limpiar Campos");
         panelBotonesAgregar.add(btnLimpiar);
         
-        // Pestaña 3: Buscar libro
         JPanel panelBuscar = new JPanel();
         tabbedPane.addTab("Buscar Libro", null, panelBuscar, null);
         panelBuscar.setLayout(new BorderLayout(0, 0));
         
-        // Panel de búsqueda
         JPanel panelBusqueda = new JPanel();
         panelBusqueda.setBorder(new EmptyBorder(20, 20, 20, 20));
         panelBuscar.add(panelBusqueda, BorderLayout.NORTH);
@@ -186,7 +172,6 @@ public class PanelLibros extends JPanel {
         btnBuscar = new JButton("Buscar");
         panelBusqueda.add(btnBuscar);
         
-        // Tabla de resultados
         JScrollPane scrollPaneBusqueda = new JScrollPane();
         panelBuscar.add(scrollPaneBusqueda, BorderLayout.CENTER);
         
@@ -213,7 +198,6 @@ public class PanelLibros extends JPanel {
     public String getTextoBusqueda() { return txtBusqueda.getText().trim(); }
     public String getCriterioBusqueda() { return comboBoxCriterio.getSelectedItem().toString(); }
     
-    // Métodos para manipular la UI
     public void limpiarFormulario() {
         txtTitulo.setText("");
         txtAutor.setText("");
@@ -318,7 +302,6 @@ public class PanelLibros extends JPanel {
         return tableBusqueda.getSelectedRow();
     }
     
-    // Métodos para agregar listeners
     public void agregarGuardarListener(ActionListener listener) {
         btnGuardar.addActionListener(listener);
     }
@@ -343,7 +326,6 @@ public class PanelLibros extends JPanel {
         btnBuscar.addActionListener(listener);
     }
     
-    // Getters para las tablas 
     public JTable getTableLibros() { return tableLibros; }
     public JTable getTableBusqueda() { return tableBusqueda; }
     

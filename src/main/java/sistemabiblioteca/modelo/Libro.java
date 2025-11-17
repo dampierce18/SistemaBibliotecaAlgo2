@@ -10,7 +10,6 @@ public class Libro {
     private int total;
     private int disponibles;
 
-    // Constructor
     public Libro(int id, String titulo, String fecha, String autor, String categoria, String editorial, int total, int disponibles) {
 		super();
 		this.id = id;
@@ -23,7 +22,6 @@ public class Libro {
 		this.disponibles = disponibles;
 	}
 
-	//  Setters    
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;
@@ -53,7 +51,6 @@ public class Libro {
         this.disponibles = disponibles;
     }
 
-    //  Getters 
 	public int getId() {
 		return id;
 	}

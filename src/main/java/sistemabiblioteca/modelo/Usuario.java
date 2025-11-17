@@ -26,7 +26,6 @@ public class Usuario {
         this.montoSancion = 0;
     }
 
-    // Setters 
 
     public void setId(int id) {
         this.id = id;
@@ -59,8 +58,6 @@ public class Usuario {
     public void setMontoSancion(int montoSancion) {
         this.montoSancion = montoSancion;
     }
-
-    // Getters 
 
     public int getId() {
         return id;

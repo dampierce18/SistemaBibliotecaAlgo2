@@ -10,17 +10,14 @@ import java.util.List;
 public class PrestamoDAO {
     private Connection connection;
     
-    // ✅ CONSTRUCTOR ORIGINAL (para uso normal)
     public PrestamoDAO() {
         this.connection = null;
     }
     
-    // ✅ CONSTRUCTOR para testing (inyección de dependencias)
     public PrestamoDAO(Connection testConnection) {
         this.connection = testConnection;
     }
     
-    // ✅ MÉTODO PARA OBTENER CONEXIÓN
     private Connection getConnection() throws SQLException {
         if (this.connection != null) {
             return this.connection;
@@ -93,7 +90,6 @@ public class PrestamoDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -123,7 +119,6 @@ public class PrestamoDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -151,7 +146,6 @@ public class PrestamoDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -181,7 +175,6 @@ public class PrestamoDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -210,7 +203,6 @@ public class PrestamoDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -241,7 +233,6 @@ public class PrestamoDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
@@ -272,7 +263,6 @@ public class PrestamoDAO {
             }
             
         } catch (SQLException e) {
-            // Sin println para mejor coverage
         } finally {
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { }
