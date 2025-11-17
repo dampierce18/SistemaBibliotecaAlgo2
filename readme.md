@@ -34,7 +34,7 @@ El sistema permite la gestión de libros, usuarios y el registro de préstamos y
 
 1.  Clona este repositorio:
     ```sh
-    git clone [https://github.com/dampierce18/SistemaBibliotecaAlgo2]
+    git clone https://github.com/dampierce18/SistemaBibliotecaAlgo2
     ```
 2.  Importa el proyecto en tu IDE (Eclipse, IntelliJ IDEA, etc.) como un "Proyecto Maven existente".
 3.  El IDE descargará automáticamente la dependencia `sqlite-jdbc`.
@@ -56,4 +56,5 @@ El proyecto sigue un patrón de diseño **Modelo-Vista-Controlador (MVC)**, comp
 * **`modelo`**: Clases de entidad (POJOs) como `Libro`, `Usuario`.
 * **`vista`**: Clases de UI (`JFrame`, `JPanel`) como `VistaPrincipal`, `PanelLibros`.
 * **`controlador`**: Lógica de negocio y manejo de eventos (`ControladorLogin`, `ControladorLibros`).
+
 * **`dao`**: Clases para consultas SQL (`LibroDAO`, `UsuarioDAO`).
