@@ -34,7 +34,7 @@ El sistema permite la gestión de libros, usuarios y el registro de préstamos y
 
 1.  Clona este repositorio:
     ```sh
-    git clone [URL_DEL_REPOSITORIO]
+    git clone [https://github.com/dampierce18/SistemaBibliotecaAlgo2]
     ```
 2.  Importa el proyecto en tu IDE (Eclipse, IntelliJ IDEA, etc.) como un "Proyecto Maven existente".
 3.  El IDE descargará automáticamente la dependencia `sqlite-jdbc`.
