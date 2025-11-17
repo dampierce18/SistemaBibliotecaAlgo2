@@ -5,6 +5,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.List;
+import sistemabiblioteca.modelo.Usuario;
 
 public class PanelUsuarios extends JPanel {
     /**
@@ -215,6 +217,77 @@ public class PanelUsuarios extends JPanel {
         for (Object[] fila : datos) {
             modelo.addRow(fila);
         }
+    }
+    public boolean validarCamposUsuario() {
+        if (getNombre().isEmpty() || getApellidoPaterno().isEmpty()) {
+            mostrarMensaje("Nombre y Apellido Paterno son obligatorios", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+    
+    public Integer obtenerUsuarioIdSeleccionado() {
+        int fila = getFilaSeleccionadaUsuarios();
+        if (fila == -1) {
+            return null;
+        }
+        return (Integer) tableUsuarios.getValueAt(fila, 0);
+    }
+    
+    public String obtenerNombreUsuarioSeleccionado() {
+        int fila = getFilaSeleccionadaUsuarios();
+        if (fila == -1) {
+            return "";
+        }
+        return (String) tableUsuarios.getValueAt(fila, 1);
+    }
+    
+    public boolean mostrarConfirmacion(String mensaje, String titulo) {
+        int confirmacion = JOptionPane.showConfirmDialog(
+            this,
+            mensaje,
+            titulo,
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+        return confirmacion == JOptionPane.YES_OPTION;
+    }
+    
+    public void mostrarMensaje(String mensaje, int tipo) {
+        JOptionPane.showMessageDialog(this, mensaje, "Mensaje", tipo);
+    }
+    
+    public void mostrarUsuarios(List<Usuario> usuarios) {
+        Object[][] datos = new Object[usuarios.size()][7];
+        
+        for (int i = 0; i < usuarios.size(); i++) {
+            Usuario usuario = usuarios.get(i);
+            datos[i][0] = usuario.getId();
+            datos[i][1] = usuario.getNombre();
+            datos[i][2] = usuario.getApellidoPaterno();
+            datos[i][3] = usuario.getApellidoMaterno();
+            datos[i][4] = usuario.getTelefono();
+            datos[i][5] = usuario.getSanciones();
+            datos[i][6] = usuario.getMontoSancion();
+        }
+        
+        actualizarTablaUsuarios(datos);
+    }
+    
+    public void mostrarResultadosBusqueda(List<Usuario> usuarios) {
+        Object[][] datos = new Object[usuarios.size()][6];
+        
+        for (int i = 0; i < usuarios.size(); i++) {
+            Usuario usuario = usuarios.get(i);
+            datos[i][0] = usuario.getId();
+            datos[i][1] = usuario.getNombre();
+            datos[i][2] = usuario.getApellidoPaterno();
+            datos[i][3] = usuario.getApellidoMaterno();
+            datos[i][4] = usuario.getTelefono();
+            datos[i][5] = usuario.getSanciones();
+        }
+        
+        actualizarTablaBusquedaUsuarios(datos);
     }
     
     // Método para limpiar formulario

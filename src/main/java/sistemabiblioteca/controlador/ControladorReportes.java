@@ -2,7 +2,6 @@ package sistemabiblioteca.controlador;
 
 import sistemabiblioteca.dao.ReporteDAO;
 import sistemabiblioteca.vista.PanelReportes;
-import javax.swing.*;
 import java.util.List;
 import java.util.Map;
 
@@ -11,8 +10,13 @@ public class ControladorReportes {
     private ReporteDAO reporteDAO;
     
     public ControladorReportes(PanelReportes vista) {
+        this(vista, new ReporteDAO());
+    }
+    
+    // Constructor para testing
+    ControladorReportes(PanelReportes vista, ReporteDAO reporteDAO) {
         this.vista = vista;
-        this.reporteDAO = new ReporteDAO();
+        this.reporteDAO = reporteDAO;
         cargarTodosLosReportes();
     }
     
@@ -24,7 +28,7 @@ public class ControladorReportes {
         cargarSituacionActual();
     }
     
-    private void cargarResumenGeneral() {
+    void cargarResumenGeneral() {
         try {
             Map<String, Integer> resumen = reporteDAO.obtenerResumenMes();
             
@@ -34,99 +38,63 @@ public class ControladorReportes {
             int usuariosSancionados = resumen.getOrDefault("usuarios_sancionados", 0);
             int multasPendientes = resumen.getOrDefault("multas_pendientes", 0);
             
-            vista.actualizarResumenGeneral(totalPrestamosMes, prestamosActivos, 
-                                         prestamosAtrasados, usuariosSancionados, 
-                                         multasPendientes);
+            vista.mostrarResumenGeneral(totalPrestamosMes, prestamosActivos, 
+                                      prestamosAtrasados, usuariosSancionados, 
+                                      multasPendientes);
             
         } catch (Exception e) {
-            System.err.println("Error cargando resumen general: " + e.getMessage());
-            vista.actualizarResumenGeneral(0, 0, 0, 0, 0);
+            vista.mostrarError("Error cargando resumen general: " + e.getMessage());
+            vista.mostrarResumenGeneral(0, 0, 0, 0, 0);
         }
     }
     
-    private void cargarLibrosMasPrestados() {
+    void cargarLibrosMasPrestados() {
         try {
             List<Object[]> libros = reporteDAO.obtenerLibrosMasPrestados();
-            Object[][] datos = new Object[libros.size()][5];
-            
-            for (int i = 0; i < libros.size(); i++) {
-                datos[i] = libros.get(i);
-            }
-            
-            vista.actualizarLibrosPrestados(datos);
+            vista.mostrarLibrosPrestados(libros);
             
         } catch (Exception e) {
-            System.err.println("Error cargando libros más prestados: " + e.getMessage());
-            vista.actualizarLibrosPrestados(new Object[0][0]);
+            vista.mostrarError("Error cargando libros más prestados: " + e.getMessage());
+            vista.mostrarLibrosPrestados(List.of());
         }
     }
     
-    private void cargarUsuariosMasActivos() {
+    void cargarUsuariosMasActivos() {
         try {
             List<Object[]> usuarios = reporteDAO.obtenerUsuariosMasActivos();
-            Object[][] datos = new Object[usuarios.size()][5];
-            
-            for (int i = 0; i < usuarios.size(); i++) {
-                datos[i] = usuarios.get(i);
-            }
-            
-            vista.actualizarUsuariosActivos(datos);
+            vista.mostrarUsuariosActivos(usuarios);
             
         } catch (Exception e) {
-            System.err.println("Error cargando usuarios más activos: " + e.getMessage());
-            // Mostrar mensaje de "Funcionalidad en desarrollo"
-            Object[][] datosEnDesarrollo = {
-                {1, "Funcionalidad en desarrollo", "-", "-", "-"}
-            };
-            vista.actualizarUsuariosActivos(datosEnDesarrollo);
+            vista.mostrarError("Error cargando usuarios más activos: " + e.getMessage());
+            // Mostrar datos vacíos o mensaje de error
+            vista.mostrarUsuariosActivos(List.of());
         }
     }
     
-    private void cargarPrestamosPorMes() {
+    void cargarPrestamosPorMes() {
         try {
             List<Object[]> prestamos = reporteDAO.obtenerPrestamosPorMes();
-            Object[][] datos = new Object[prestamos.size()][5];
-            
-            for (int i = 0; i < prestamos.size(); i++) {
-                datos[i] = prestamos.get(i);
-            }
-            
-            vista.actualizarPrestamosMes(datos);
+            vista.mostrarPrestamosMes(prestamos);
             
         } catch (Exception e) {
-            System.err.println("Error cargando préstamos por mes: " + e.getMessage());
-            // Mostrar mensaje de "Funcionalidad en desarrollo"
-            Object[][] datosEnDesarrollo = {
-                {"Funcionalidad en desarrollo", "-", "-", "-", "-"}
-            };
-            vista.actualizarPrestamosMes(datosEnDesarrollo);
+            vista.mostrarError("Error cargando préstamos por mes: " + e.getMessage());
+            vista.mostrarPrestamosMes(List.of());
         }
     }
     
-    private void cargarSituacionActual() {
+    void cargarSituacionActual() {
         try {
             List<Object[]> situacion = reporteDAO.obtenerSituacionActual();
-            Object[][] datos = new Object[situacion.size()][5];
-            
-            for (int i = 0; i < situacion.size(); i++) {
-                datos[i] = situacion.get(i);
-            }
-            
-            vista.actualizarSituacionActual(datos);
+            vista.mostrarSituacionActual(situacion);
             
         } catch (Exception e) {
-            System.err.println("Error cargando situación actual: " + e.getMessage());
-            // Mostrar mensaje de "Funcionalidad en desarrollo"
-            Object[][] datosEnDesarrollo = {
-                {"Info", "Funcionalidad en desarrollo", "-", "-", "-"}
-            };
-            vista.actualizarSituacionActual(datosEnDesarrollo);
+            vista.mostrarError("Error cargando situación actual: " + e.getMessage());
+            vista.mostrarSituacionActual(List.of());
         }
     }
     
-    // Método para refrescar todos los reportes
     public void refrescarReportes() {
-        cargarTodosLosReportes();
-        JOptionPane.showMessageDialog(vista, "Reportes actualizados", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-    }
+		cargarTodosLosReportes();
+	}
+    
 }

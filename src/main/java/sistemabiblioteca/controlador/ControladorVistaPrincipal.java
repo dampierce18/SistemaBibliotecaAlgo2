@@ -1,7 +1,6 @@
 package sistemabiblioteca.controlador;
 
 import sistemabiblioteca.vista.VistaPrincipal;
-import javax.swing.*;
 
 public class ControladorVistaPrincipal {
     private VistaPrincipal vista;
@@ -12,19 +11,33 @@ public class ControladorVistaPrincipal {
     private String usuarioLogueado;
     
     public ControladorVistaPrincipal(String usuarioLogueado) {
-    	this.usuarioLogueado = usuarioLogueado;
-        this.vista = new VistaPrincipal();
-        this.controladorLibros = new ControladorLibros(vista.getPanelLibros());
-        this.controladorPrestamos = new ControladorPrestamos(vista.getPanelPrestamos());
-        this.controladorUsuarios = new ControladorUsuarios(vista.getPanelUsuarios());
-        this.controladorReportes = new ControladorReportes(vista.getPanelReportes());
+        this(new VistaPrincipal(), usuarioLogueado,
+             new ControladorLibros(new VistaPrincipal().getPanelLibros()),
+             new ControladorPrestamos(new VistaPrincipal().getPanelPrestamos()),
+             new ControladorUsuarios(new VistaPrincipal().getPanelUsuarios()),
+             new ControladorReportes(new VistaPrincipal().getPanelReportes()));
+    }
+    
+    // Constructor para testing - con inyección de dependencias
+    ControladorVistaPrincipal(VistaPrincipal vista, String usuarioLogueado,
+                             ControladorLibros controladorLibros,
+                             ControladorPrestamos controladorPrestamos,
+                             ControladorUsuarios controladorUsuarios,
+                             ControladorReportes controladorReportes) {
+        this.vista = vista;
+        this.usuarioLogueado = usuarioLogueado;
+        this.controladorLibros = controladorLibros;
+        this.controladorPrestamos = controladorPrestamos;
+        this.controladorUsuarios = controladorUsuarios;
+        this.controladorReportes = controladorReportes;
+        
         configurarPermisos();
         cargarDatos();
         configurarEventos();
         vista.setVisible(true);
         
         String rol = esAdmin() ? "Administrador" : "Empleado";
-        JOptionPane.showMessageDialog(vista, "Bienvenido: " + usuarioLogueado + " (" + rol + ")", "Bienvenido", JOptionPane.INFORMATION_MESSAGE);
+        vista.mostrarMensaje("Bienvenido: " + usuarioLogueado + " (" + rol + ")");
     }
     
     private void configurarPermisos() {
@@ -39,7 +52,7 @@ public class ControladorVistaPrincipal {
         vista.getPanelUsuarios().setModoEmpleado();
     }
     
-    private boolean esAdmin() {
+    boolean esAdmin() {
         return "admin".equals(usuarioLogueado);
     }
     
@@ -52,7 +65,7 @@ public class ControladorVistaPrincipal {
         vista.agregarListenerSalir(e -> salirSistema());
     }
     
-    private void cargarDatos() {
+    void cargarDatos() {
         try {
             int totalLibros = controladorLibros.obtenerTotalLibros();
             vista.getLblTotalLibros().setText(String.valueOf(totalLibros));
@@ -81,44 +94,36 @@ public class ControladorVistaPrincipal {
     }
     
     // Métodos para mostrar cada panel
-    private void mostrarPanelPrincipal() {
+    void mostrarPanelPrincipal() {
         vista.mostrarPanelPrincipal();
         System.out.println("Mostrando panel Principal");
     }
     
-    private void mostrarPanelPrestamos() {
+    void mostrarPanelPrestamos() {
         vista.mostrarPanelPrestamos();
         System.out.println("Mostrando panel Préstamos");
     }
     
-    private void mostrarPanelUsuarios() {
+    void mostrarPanelUsuarios() {
         vista.mostrarPanelUsuarios();
         System.out.println("Mostrando panel Usuarios");
     }
     
-    private void mostrarPanelLibros() {
+    void mostrarPanelLibros() {
         vista.mostrarPanelLibros();
         System.out.println("Mostrando panel Libros");
     }
     
-    private void mostrarPanelReportes() {
+    void mostrarPanelReportes() {
         vista.mostrarPanelReportes();
         System.out.println("Mostrando panel Reportes");
     }
     
     
-    private void salirSistema() {
-        int confirmacion = JOptionPane.showConfirmDialog(
-            vista,
-            "¿Está seguro que desea salir del sistema?",
-            "Confirmar salida",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
-        );
-        
-        if (confirmacion == JOptionPane.YES_OPTION) {
-            System.exit(0);
-        }
+    void salirSistema() {
+    	if (vista.confirmarSalida()) {
+    	    System.exit(0);
+    	}
     }
 }
     

@@ -1,10 +1,12 @@
 package sistemabiblioteca.vista;
 
+import sistemabiblioteca.modelo.Libro;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 public class PanelLibros extends JPanel {
     /**
@@ -202,7 +204,6 @@ public class PanelLibros extends JPanel {
         scrollPaneBusqueda.setViewportView(tableBusqueda);
     }
 
-    // Métodos para acceder a los datos (GETTERS)
     public String getTitulo() { return txtTitulo.getText().trim(); }
     public String getAutor() { return txtAutor.getText().trim(); }
     public String getEditorial() { return txtEditorial.getText().trim(); }
@@ -236,6 +237,77 @@ public class PanelLibros extends JPanel {
         for (Object[] fila : datos) {
             modelo.addRow(fila);
         }
+    }
+    
+    public void mostrarMensaje(String mensaje, int tipo) {
+        JOptionPane.showMessageDialog(this, mensaje, "Mensaje", tipo);
+    }
+    
+    public boolean mostrarConfirmacion(String mensaje, String titulo) {
+        int confirmacion = JOptionPane.showConfirmDialog(
+            this,
+            mensaje,
+            titulo,
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+        return confirmacion == JOptionPane.YES_OPTION;
+    }
+    
+    public boolean validarCamposLibro() {
+        if (getTitulo().isEmpty() || getAutor().isEmpty()) {
+            mostrarMensaje("Título y Autor son obligatorios", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+    
+    public Integer obtenerLibroIdSeleccionado() {
+        int fila = getFilaSeleccionadaLibros();
+        if (fila == -1) {
+            return null;
+        }
+        return (Integer) tableLibros.getValueAt(fila, 0);
+    }
+    
+    public String obtenerTituloLibroSeleccionado() {
+        int fila = getFilaSeleccionadaLibros();
+        if (fila == -1) {
+            return "";
+        }
+        return (String) tableLibros.getValueAt(fila, 1);
+    }
+    
+    public void mostrarLibros(List<Libro> libros) {
+        Object[][] datos = new Object[libros.size()][7];
+        
+        for (int i = 0; i < libros.size(); i++) {
+            Libro libro = libros.get(i);
+            datos[i][0] = libro.getId();
+            datos[i][1] = libro.getTitulo();
+            datos[i][2] = libro.getAutor();
+            datos[i][3] = libro.getAnio();
+            datos[i][4] = libro.getCategoria();
+            datos[i][5] = libro.getTotal();
+            datos[i][6] = libro.getDisponibles();
+        }
+        
+        actualizarTablaLibros(datos);
+    }
+    
+    public void mostrarResultadosBusqueda(List<Libro> libros) {
+        Object[][] datos = new Object[libros.size()][5];
+        
+        for (int i = 0; i < libros.size(); i++) {
+            Libro libro = libros.get(i);
+            datos[i][0] = libro.getId();
+            datos[i][1] = libro.getTitulo();
+            datos[i][2] = libro.getAutor();
+            datos[i][3] = libro.getCategoria();
+            datos[i][4] = libro.getDisponibles();
+        }
+        
+        actualizarTablaBusqueda(datos);
     }
     
     public int getFilaSeleccionadaLibros() {
@@ -274,4 +346,6 @@ public class PanelLibros extends JPanel {
     // Getters para las tablas 
     public JTable getTableLibros() { return tableLibros; }
     public JTable getTableBusqueda() { return tableBusqueda; }
+    
+    
 }

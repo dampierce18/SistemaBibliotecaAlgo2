@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
+
 
 public class PanelReportes extends JPanel {
     /**
@@ -237,6 +239,55 @@ public class PanelReportes extends JPanel {
         panel.add(scrollPane, BorderLayout.CENTER);
         
         return panel;
+    }
+    
+    public void mostrarMensaje(String mensaje, int tipo) {
+        JOptionPane.showMessageDialog(this, mensaje, "Mensaje", tipo);
+    }
+    
+    public void mostrarError(String mensaje) {
+        mostrarMensaje(mensaje, JOptionPane.ERROR_MESSAGE);
+    }
+    
+    public void mostrarResumenGeneral(int totalPrestamosMes, int prestamosActivos, 
+                                    int prestamosAtrasados, int usuariosSancionados, 
+                                    int multasPendientes) {
+        lblTotalPrestamosMes.setText(String.valueOf(totalPrestamosMes));
+        lblPrestamosActivos.setText(String.valueOf(prestamosActivos));
+        lblPrestamosAtrasados.setText(String.valueOf(prestamosAtrasados));
+        lblUsuariosSancionados.setText(String.valueOf(usuariosSancionados));
+        lblMultasPendientes.setText("$" + multasPendientes);
+    }
+    
+    public void mostrarLibrosPrestados(List<Object[]> libros) {
+        Object[][] datos = convertirListaATabla(libros);
+        actualizarLibrosPrestados(datos); 
+    }
+    
+    public void mostrarUsuariosActivos(List<Object[]> usuarios) {
+        Object[][] datos = convertirListaATabla(usuarios);
+        actualizarUsuariosActivos(datos); 
+    }
+    
+    public void mostrarPrestamosMes(List<Object[]> prestamos) {
+        Object[][] datos = convertirListaATabla(prestamos);
+        actualizarPrestamosMes(datos); 
+    }
+    
+    public void mostrarSituacionActual(List<Object[]> situacion) {
+        Object[][] datos = convertirListaATabla(situacion);
+        actualizarSituacionActual(datos); 
+    }
+    
+    private Object[][] convertirListaATabla(List<Object[]> lista) {
+        if (lista == null || lista.isEmpty()) {
+            return new Object[0][0];
+        }
+        Object[][] datos = new Object[lista.size()][];
+        for (int i = 0; i < lista.size(); i++) {
+            datos[i] = lista.get(i);
+        }
+        return datos;
     }
     
     public void actualizarResumenGeneral(int totalPrestamosMes, int prestamosActivos, 

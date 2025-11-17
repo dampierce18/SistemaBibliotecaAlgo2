@@ -115,5 +115,15 @@ public class LoginFrame extends JFrame {
                 JOptionPane.ERROR_MESSAGE
             );
     }
+    public boolean confirmarSalida() {
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro que desea salir del sistema?",
+                "Confirmar salida",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+        return result == JOptionPane.YES_OPTION;
+    }
     
 }

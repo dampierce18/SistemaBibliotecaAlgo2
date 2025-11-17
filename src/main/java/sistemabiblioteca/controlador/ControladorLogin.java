@@ -7,25 +7,31 @@ public class ControladorLogin {
     private LoginFrame vista;
     
     // Credenciales fijas
-    private static final String ADMIN_USUARIO = "admin";
-    private static final String ADMIN_PASSWORD = "123";
-    private static final String EMPLEADO_USUARIO = "empleado";
-    private static final String EMPLEADO_PASSWORD = "123";
+    static final String ADMIN_USUARIO = "admin";
+    static final String ADMIN_PASSWORD = "123";
+    static final String EMPLEADO_USUARIO = "empleado";
+    static final String EMPLEADO_PASSWORD = "123";
     
     private String usuarioLogueado; // Guardar quién inició sesión
     
     public ControladorLogin() {
-        this.vista = new LoginFrame();
+        this(new LoginFrame());
+    }
+    
+    public ControladorLogin(LoginFrame vista) {
+        //this.vista = new LoginFrame();
+    	this.vista = vista;
         configurarEventos();
         vista.setVisible(true);
     }
+    
     
     private void configurarEventos() {
         vista.getBtnLogin().addActionListener(e -> verificarCredenciales());
         vista.getBtnSalir().addActionListener(e -> salirSistema());
     }
     
-    private void verificarCredenciales() {
+    public void verificarCredenciales() {
         String usuario = vista.getTxtUsuario().getText().trim();
         String password = new String(vista.getTxtPassword().getPassword());
         
@@ -60,18 +66,19 @@ public class ControladorLogin {
         });
     }
     
-    private void salirSistema() {
-        int confirmacion = JOptionPane.showConfirmDialog(
-            vista,
-            "¿Está seguro que desea salir del sistema?",
-            "Confirmar salida",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
-        );
-        
-        if (confirmacion == JOptionPane.YES_OPTION) {
-            System.exit(0);
-        }
+    public void salirSistema() {
+    	if (vista.confirmarSalida()) {
+    		exit(0);
+    	}
+
+    }
+
+    protected void exit(int status) {
+        System.exit(status);
+    }
+    
+    String getUsuarioLogueado() {
+        return usuarioLogueado;
     }
     
 }

@@ -33,7 +33,6 @@ public class VistaPrincipal extends JFrame {
     private PanelPrestamos panelPrestamos;
     private PanelUsuarios panelUsuarios;
     private PanelLibros panelLibros;
-    //private JPanel panelReportes;
     private PanelReportes panelReportes;
     
     public VistaPrincipal() {
@@ -186,38 +185,23 @@ public class VistaPrincipal extends JFrame {
 
         return panel;
     }
-
-    /*
-    private JPanel crearPanelModulo(String titulo, String descripcion) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
-        // Título
-        JPanel panelTitulo = new JPanel();
-        panelTitulo.setBackground(new Color(70, 130, 180));
-        panelTitulo.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
-        
-        JLabel lblTitulo = new JLabel(titulo);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
-        lblTitulo.setForeground(Color.WHITE);
-        panelTitulo.add(lblTitulo);
-        
-        panel.add(panelTitulo, BorderLayout.NORTH);
-        
-        // Contenido centrado
-        JPanel panelContenido = new JPanel();
-        panelContenido.setBackground(Color.WHITE);
-        panelContenido.setLayout(new BorderLayout(0, 0));
-        panel.add(panelContenido, BorderLayout.CENTER);
-        
-        JLabel lblNewLabel_8 = new JLabel(descripcion);
-        lblNewLabel_8.setHorizontalAlignment(SwingConstants.CENTER);
-        lblNewLabel_8.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panelContenido.add(lblNewLabel_8, BorderLayout.CENTER);
-        
-        return panel;
+    
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
     }
-    */
+
+    public boolean confirmarSalida() {
+        int confirmacion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro que desea salir del sistema?",
+                "Confirmar salida",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+        return confirmacion == JOptionPane.YES_OPTION;
+    }
+
+
     // Métodos para agregar listeners a los botones
     public void agregarListenerPrincipal(ActionListener listener) {
         btnPrincipal.addActionListener(listener);

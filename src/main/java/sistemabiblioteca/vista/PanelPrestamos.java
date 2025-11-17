@@ -174,6 +174,25 @@ public class PanelPrestamos extends JPanel {
         }
     }
     
+    public void mostrarMensaje(String mensaje, int tipo) {
+        JOptionPane.showMessageDialog(this, mensaje, "Mensaje", tipo);
+    }
+    
+    public Integer obtenerPrestamoIdSeleccionado() {
+        int fila = getFilaSeleccionadaPrestamosActivos();
+        if (fila == -1) {
+            return null;
+        }
+        return (Integer) tablePrestamosActivos.getValueAt(fila, 0);
+    }
+    
+    public Integer obtenerLibroIdSeleccionado() {
+        int fila = getFilaSeleccionadaPrestamosActivos();
+        if (fila == -1) {
+            return null;
+        }
+        return (Integer) tablePrestamosActivos.getValueAt(fila, 1);
+    }
     
     // Métodos para limpiar formulario
     public void limpiarFormulario() {
