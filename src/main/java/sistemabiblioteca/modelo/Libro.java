@@ -24,9 +24,6 @@ public class Libro {
 	}
 
 	//  Setters    
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;

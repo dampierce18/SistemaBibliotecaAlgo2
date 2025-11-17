@@ -7,12 +7,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UsuarioDAO {
+    private Connection connection;
+    
+    // ✅ CONSTRUCTOR ORIGINAL (para uso normal)
+    public UsuarioDAO() {
+        this.connection = null;
+    }
+    
+    // ✅ CONSTRUCTOR para testing (inyección de dependencias)
+    public UsuarioDAO(Connection testConnection) {
+        this.connection = testConnection;
+    }
+    
+    // ✅ MÉTODO PARA OBTENER CONEXIÓN
+    private Connection getConnection() throws SQLException {
+        if (this.connection != null) {
+            return this.connection;
+        }
+        return ConexionSQLite.getConnection();
+    }
     
     public boolean insertarUsuario(Usuario usuario) {
         String sql = "INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, domicilio, telefono, sanciones, monto_sancion) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement pstmt = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             
             pstmt.setString(1, usuario.getNombre());
             pstmt.setString(2, usuario.getApellidoPaterno());
@@ -22,22 +43,28 @@ public class UsuarioDAO {
             pstmt.setInt(6, usuario.getSanciones());
             pstmt.setInt(7, usuario.getMontoSancion());
             
-            return pstmt.executeUpdate() > 0;
+            int filasAfectadas = pstmt.executeUpdate();
+            return filasAfectadas > 0;
             
         } catch (SQLException e) {
-            System.err.println("Error insertando usuario: " + e.getMessage());
             return false;
+        } finally {
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
     }
     
     public Usuario obtenerUsuarioPorId(int id) {
         String sql = "SELECT * FROM usuarios WHERE id=?";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             if (rs.next()) {
                 return resultSetAUsuario(rs);
@@ -45,6 +72,13 @@ public class UsuarioDAO {
             
         } catch (SQLException e) {
             System.err.println("Error obteniendo usuario por ID: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
         
         return null;
@@ -53,10 +87,13 @@ public class UsuarioDAO {
     public List<Usuario> obtenerTodosLosUsuarios() {
         List<Usuario> usuarios = new ArrayList<>();
         String sql = "SELECT * FROM usuarios ORDER BY nombre, apellido_paterno";
+        Statement stmt = null;
+        ResultSet rs = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try {
+            Connection conn = getConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
             
             while (rs.next()) {
                 Usuario usuario = resultSetAUsuario(rs);
@@ -65,6 +102,13 @@ public class UsuarioDAO {
             
         } catch (SQLException e) {
             System.err.println("Error obteniendo usuarios: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (stmt != null) {
+                try { stmt.close(); } catch (SQLException e) { }
+            }
         }
         
         return usuarios;
@@ -72,9 +116,11 @@ public class UsuarioDAO {
     
     public boolean actualizarUsuario(Usuario usuario) {
         String sql = "UPDATE usuarios SET nombre=?, apellido_paterno=?, apellido_materno=?, domicilio=?, telefono=?, sanciones=?, monto_sancion=? WHERE id=?";
+        PreparedStatement pstmt = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             
             pstmt.setString(1, usuario.getNombre());
             pstmt.setString(2, usuario.getApellidoPaterno());
@@ -88,23 +134,31 @@ public class UsuarioDAO {
             return pstmt.executeUpdate() > 0;
             
         } catch (SQLException e) {
-            System.err.println("Error actualizando usuario: " + e.getMessage());
             return false;
+        } finally {
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
     }
     
     public boolean eliminarUsuario(int id) {
         String sql = "DELETE FROM usuarios WHERE id=?";
+        PreparedStatement pstmt = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
+            
             return pstmt.executeUpdate() > 0;
             
         } catch (SQLException e) {
-            System.err.println("Error eliminando usuario: " + e.getMessage());
             return false;
+        } finally {
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
     }
     
@@ -122,29 +176,32 @@ public class UsuarioDAO {
             case "Teléfono":
                 sql = "SELECT * FROM usuarios WHERE telefono LIKE ? ORDER BY nombre, apellido_paterno";
                 break;
-            case "ID":  // ← NUEVO CASO PARA BUSCAR POR ID
+            case "ID":
                 sql = "SELECT * FROM usuarios WHERE id = ? ORDER BY nombre, apellido_paterno";
                 break;
             default:
                 sql = "SELECT * FROM usuarios WHERE nombre LIKE ? ORDER BY nombre, apellido_paterno";
         }
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             
             // Para ID usamos búsqueda exacta, para los otros usamos LIKE
             if ("ID".equals(criterio)) {
                 try {
-                    pstmt.setInt(1, Integer.parseInt(valor)); // ← Búsqueda exacta por ID
+                    pstmt.setInt(1, Integer.parseInt(valor));
                 } catch (NumberFormatException e) {
-                    System.err.println("Error: ID debe ser un número válido");
-                    return usuarios; // Retorna lista vacía si el ID no es número
+                    return usuarios;
                 }
             } else {
-                pstmt.setString(1, "%" + valor + "%");    // ← Búsqueda parcial para texto
+                pstmt.setString(1, "%" + valor + "%");
             }
             
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             while (rs.next()) {
                 Usuario usuario = resultSetAUsuario(rs);
@@ -153,6 +210,13 @@ public class UsuarioDAO {
             
         } catch (SQLException e) {
             System.err.println("Error buscando usuarios: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
         
         return usuarios;
@@ -160,10 +224,13 @@ public class UsuarioDAO {
     
     public int contarTotalUsuarios() {
         String sql = "SELECT COUNT(*) as total FROM usuarios";
+        Statement stmt = null;
+        ResultSet rs = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try {
+            Connection conn = getConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
             
             if (rs.next()) {
                 return rs.getInt("total");
@@ -171,6 +238,13 @@ public class UsuarioDAO {
             
         } catch (SQLException e) {
             System.err.println("Error contando usuarios: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (stmt != null) {
+                try { stmt.close(); } catch (SQLException e) { }
+            }
         }
         
         return 0;

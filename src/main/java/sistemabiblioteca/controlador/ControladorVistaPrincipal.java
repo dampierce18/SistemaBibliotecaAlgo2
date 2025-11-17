@@ -8,7 +8,7 @@ public class ControladorVistaPrincipal {
     private ControladorLibros controladorLibros;
     private ControladorPrestamos controladorPrestamos;
     private ControladorUsuarios controladorUsuarios;
-    
+    private ControladorReportes controladorReportes;
     private String usuarioLogueado;
     
     public ControladorVistaPrincipal(String usuarioLogueado) {
@@ -17,6 +17,7 @@ public class ControladorVistaPrincipal {
         this.controladorLibros = new ControladorLibros(vista.getPanelLibros());
         this.controladorPrestamos = new ControladorPrestamos(vista.getPanelPrestamos());
         this.controladorUsuarios = new ControladorUsuarios(vista.getPanelUsuarios());
+        this.controladorReportes = new ControladorReportes(vista.getPanelReportes());
         configurarPermisos();
         cargarDatos();
         configurarEventos();
@@ -70,6 +71,12 @@ public class ControladorVistaPrincipal {
             vista.getLblAtrasados().setText("0");
             vista.getLblTotalUsuarios().setText("0");
 
+        }
+    }
+
+    public void refrescarReportes() {
+        if (controladorReportes != null) {
+            controladorReportes.refrescarReportes();
         }
     }
     

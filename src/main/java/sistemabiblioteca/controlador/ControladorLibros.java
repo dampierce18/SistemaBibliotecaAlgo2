@@ -17,7 +17,7 @@ public class ControladorLibros {
         cargarLibros();
     }
     
-	private void configurarEventos() {
+	public void configurarEventos() {
         vista.agregarGuardarListener(e -> guardarLibro());
         vista.agregarLimpiarListener(e -> vista.limpiarFormulario());
         vista.agregarEditarListener(e -> editarLibro());
@@ -26,7 +26,7 @@ public class ControladorLibros {
         vista.agregarBuscarListener(e -> buscarLibros());
     }
     
-    private void guardarLibro() {
+	public void guardarLibro() {
         try {
             // Validaciones
             if (vista.getTitulo().isEmpty() || vista.getAutor().isEmpty()) {
@@ -62,7 +62,7 @@ public class ControladorLibros {
         }
     }
     
-    private void cargarLibros() {
+	public void cargarLibros() {
         List<Libro> libros = libroDAO.obtenerTodosLosLibros();
         Object[][] datos = new Object[libros.size()][7];
         
@@ -80,7 +80,7 @@ public class ControladorLibros {
         vista.actualizarTablaLibros(datos);
     }
     
-    private void editarLibro() {
+	public void editarLibro() {
         int filaSeleccionada = vista.getFilaSeleccionadaLibros();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Seleccione un libro para editar", "Advertencia", JOptionPane.WARNING_MESSAGE);
@@ -91,7 +91,7 @@ public class ControladorLibros {
         JOptionPane.showMessageDialog(vista, "Funcionalidad de edición en desarrollo", "Info", JOptionPane.INFORMATION_MESSAGE);
     }
     
-    private void eliminarLibro() {
+	public void eliminarLibro() {
         int filaSeleccionada = vista.getFilaSeleccionadaLibros();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Seleccione un libro para eliminar", "Advertencia", JOptionPane.WARNING_MESSAGE);
@@ -119,7 +119,7 @@ public class ControladorLibros {
         }
     }
     
-    private void buscarLibros() {
+	public void buscarLibros() {
         String criterio = vista.getCriterioBusqueda();
         String valor = vista.getTextoBusqueda();
         

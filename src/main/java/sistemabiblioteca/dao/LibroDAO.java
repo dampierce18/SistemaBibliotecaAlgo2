@@ -7,12 +7,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LibroDAO {
+    private Connection connection;
     
+    // ✅ CONSTRUCTOR ORIGINAL (para uso normal)
+    public LibroDAO() {
+        this.connection = null;
+    }
+    
+    // ✅ CONSTRUCTOR para testing (inyección de dependencias)
+    public LibroDAO(Connection testConnection) {
+        this.connection = testConnection;
+    }
+    
+    // ✅ MÉTODO PARA OBTENER CONEXIÓN
+    private Connection getConnection() throws SQLException {
+        if (this.connection != null) {
+            return this.connection;
+        }
+        return ConexionSQLite.getConnection();
+    }
+    
+    // ✅ INSERTAR LIBRO
     public boolean insertarLibro(Libro libro) {
         String sql = "INSERT INTO libros (titulo, anio, autor, categoria, editorial, total, disponibles) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement pstmt = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             
             pstmt.setString(1, libro.getTitulo());
             pstmt.setString(2, libro.getAnio());
@@ -28,16 +50,27 @@ public class LibroDAO {
         } catch (SQLException e) {
             System.err.println("Error insertando libro: " + e.getMessage());
             return false;
+        } finally {
+            if (pstmt != null) {
+                try { 
+                    pstmt.close(); 
+                } catch (SQLException e) {
+                }
+            }
         }
     }
     
+    // ✅ OBTENER TODOS LOS LIBROS
     public List<Libro> obtenerTodosLosLibros() {
         List<Libro> libros = new ArrayList<>();
         String sql = "SELECT * FROM libros ORDER BY titulo";
+        Statement stmt = null;
+        ResultSet rs = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try {
+            Connection conn = getConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
             
             while (rs.next()) {
                 Libro libro = resultSetALibro(rs);
@@ -46,16 +79,26 @@ public class LibroDAO {
             
         } catch (SQLException e) {
             System.err.println("Error obteniendo libros: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (stmt != null) {
+                try { stmt.close(); } catch (SQLException e) { }
+            }
         }
         
         return libros;
     }
     
+    // ✅ ACTUALIZAR LIBRO
     public boolean actualizarLibro(Libro libro) {
         String sql = "UPDATE libros SET titulo=?, anio=?, autor=?, categoria=?, editorial=?, total=?, disponibles=? WHERE id=?";
+        PreparedStatement pstmt = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             
             pstmt.setString(1, libro.getTitulo());
             pstmt.setString(2, libro.getAnio());
@@ -71,24 +114,36 @@ public class LibroDAO {
         } catch (SQLException e) {
             System.err.println("Error actualizando libro: " + e.getMessage());
             return false;
+        } finally {
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
     }
     
+    // ✅ ELIMINAR LIBRO
     public boolean eliminarLibro(int id) {
         String sql = "DELETE FROM libros WHERE id=?";
+        PreparedStatement pstmt = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
+            
             return pstmt.executeUpdate() > 0;
             
         } catch (SQLException e) {
             System.err.println("Error eliminando libro: " + e.getMessage());
             return false;
+        } finally {
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
     }
     
+    // ✅ BUSCAR LIBROS
     public List<Libro> buscarLibros(String criterio, String valor) {
         List<Libro> libros = new ArrayList<>();
         String sql = "";
@@ -110,11 +165,14 @@ public class LibroDAO {
                 sql = "SELECT * FROM libros WHERE titulo LIKE ? ORDER BY titulo";
         }
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, "%" + valor + "%");
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             while (rs.next()) {
                 Libro libro = resultSetALibro(rs);
@@ -123,17 +181,28 @@ public class LibroDAO {
             
         } catch (SQLException e) {
             System.err.println("Error buscando libros: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
         
         return libros;
     }
     
+    // ✅ CONTAR TOTAL DE LIBROS
     public int contarTotalLibros() {
         String sql = "SELECT COUNT(*) as total FROM libros";
+        Statement stmt = null;
+        ResultSet rs = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try {
+            Connection conn = getConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
             
             if (rs.next()) {
                 return rs.getInt("total");
@@ -141,19 +210,29 @@ public class LibroDAO {
             
         } catch (SQLException e) {
             System.err.println("Error contando libros: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (stmt != null) {
+                try { stmt.close(); } catch (SQLException e) { }
+            }
         }
         
         return 0;
     }
     
+    // ✅ OBTENER LIBRO POR ID
     public Libro obtenerLibroPorId(int id) {
         String sql = "SELECT * FROM libros WHERE id=?";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
-        try (Connection conn = ConexionSQLite.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+        try {
+            Connection conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             if (rs.next()) {
                 return resultSetALibro(rs);
@@ -161,11 +240,19 @@ public class LibroDAO {
             
         } catch (SQLException e) {
             System.err.println("Error obteniendo libro por ID: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { }
+            }
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { }
+            }
         }
         
         return null;
     }
     
+    // ✅ CONVERTIR RESULTSET A LIBRO
     private Libro resultSetALibro(ResultSet rs) throws SQLException {
         return new Libro(
             rs.getInt("id"),

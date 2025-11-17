@@ -33,7 +33,8 @@ public class VistaPrincipal extends JFrame {
     private PanelPrestamos panelPrestamos;
     private PanelUsuarios panelUsuarios;
     private PanelLibros panelLibros;
-    private JPanel panelReportes;
+    //private JPanel panelReportes;
+    private PanelReportes panelReportes;
     
     public VistaPrincipal() {
         configurarVentana();
@@ -110,7 +111,7 @@ public class VistaPrincipal extends JFrame {
         panelContenido.add(panelLibros, "Libros");
         
         // Panel Reportes (por implementar)
-        panelReportes = crearPanelModulo("Módulo de Reportes", "Aquí irán los reportes del sistema");
+        panelReportes = new PanelReportes();
         panelContenido.add(panelReportes, "Reportes");
     }
     
@@ -186,7 +187,7 @@ public class VistaPrincipal extends JFrame {
         return panel;
     }
 
-    
+    /*
     private JPanel crearPanelModulo(String titulo, String descripcion) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
@@ -216,7 +217,7 @@ public class VistaPrincipal extends JFrame {
         
         return panel;
     }
-    
+    */
     // Métodos para agregar listeners a los botones
     public void agregarListenerPrincipal(ActionListener listener) {
         btnPrincipal.addActionListener(listener);
@@ -272,7 +273,8 @@ public class VistaPrincipal extends JFrame {
     public PanelPrestamos getPanelPrestamos() { return panelPrestamos; }
     public PanelUsuarios getPanelUsuarios() { return panelUsuarios; }
     public PanelLibros getPanelLibros() { return panelLibros; }
-    public JPanel getPanelReportes() { return panelReportes; }
+    public PanelReportes getPanelReportes() { return panelReportes; }
+    //public JPanel getPanelReportes() { return panelReportes; }
     public JLabel getLblTotalLibros() { return lblTotalLibros; }
     public JLabel getLblTotalUsuarios() { return lblTotalUsuarios; }
     public JLabel getLblPrestamosActivos() { return lblPrestamosActivos; }
