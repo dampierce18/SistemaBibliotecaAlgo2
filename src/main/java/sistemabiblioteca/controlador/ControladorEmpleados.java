@@ -17,7 +17,14 @@ public class ControladorEmpleados {
         cargarEmpleados();
     }
     
-    private void configurarEventos() {
+    ControladorEmpleados(PanelEmpleados vista, EmpleadoDAO empleadoDAO) {
+        this.vista = vista;
+        this.empleadoDAO = empleadoDAO;
+        configurarEventos();
+        cargarEmpleados();
+    }
+    
+     void configurarEventos() {
         vista.agregarGuardarEmpleadoListener(e -> guardarEmpleado());
         vista.agregarLimpiarEmpleadoListener(e -> vista.limpiarFormulario());
         vista.agregarEditarEmpleadoListener(e -> editarEmpleado());
@@ -25,20 +32,17 @@ public class ControladorEmpleados {
         vista.agregarActualizarEmpleadosListener(e -> cargarEmpleados());
     }
     
-    private void guardarEmpleado() {
+     void guardarEmpleado() {
         try {
-            // Validaciones
             if (!vista.validarCamposEmpleado()) {
                 return;
             }
             
-            // Verificar si el usuario ya existe
             if (empleadoDAO.existeUsuario(vista.getUsuario())) {
                 vista.mostrarMensaje("El nombre de usuario ya existe", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
-            // Crear objeto Empleado
             Empleado empleado = new Empleado(
                 vista.getNombre(),
                 vista.getApellidoPaterno(),
@@ -64,28 +68,26 @@ public class ControladorEmpleados {
         }
     }
     
-    private void cargarEmpleados() {
+     void cargarEmpleados() {
         List<Empleado> empleados = empleadoDAO.obtenerTodosLosEmpleados();
         vista.mostrarEmpleados(empleados);
     }
     
-    private void editarEmpleado() {
+     void editarEmpleado() {
         Integer empleadoId = vista.obtenerEmpleadoIdSeleccionado();
         if (empleadoId == null) {
             vista.mostrarMensaje("Seleccione un empleado para editar", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        // Cargar datos del empleado seleccionado en el formulario
         Empleado empleado = empleadoDAO.obtenerEmpleadoPorId(empleadoId);
         if (empleado != null) {
             vista.cargarDatosEnFormulario(empleado);
-            // Cambiar a la pestaña de agregar/editar
             vista.cambiarAPestanaFormulario();
         }
     }
     
-    private void eliminarEmpleado() {
+     void eliminarEmpleado() {
         Integer empleadoId = vista.obtenerEmpleadoIdSeleccionado();
         String nombreCompleto = vista.obtenerNombreEmpleadoSeleccionado();
         
