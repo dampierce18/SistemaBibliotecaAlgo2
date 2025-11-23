@@ -6,9 +6,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sistemabiblioteca.dao.EmpleadoDAO;
+import sistemabiblioteca.modelo.Empleado;
 import sistemabiblioteca.vista.LoginFrame;
 
 import javax.swing.*;
+import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,18 +36,24 @@ class ControladorLoginTest {
     @Mock
     private JPasswordField txtPassword;
 
+    @Mock
+    private EmpleadoDAO empleadoDAO;
+
+    @Mock
+    private Empleado empleado;
+
     private ControladorLogin controlador;
     private AtomicBoolean exitCalled;
 
     @BeforeEach
-    void configurar() {
+    void configurar() throws Exception {
         // Configurar los mocks de los componentes de la vista
         lenient().when(vista.getBtnLogin()).thenReturn(btnLogin);
         lenient().when(vista.getBtnSalir()).thenReturn(btnSalir);
         lenient().when(vista.getTxtUsuario()).thenReturn(txtUsuario);
         lenient().when(vista.getTxtPassword()).thenReturn(txtPassword);
 
-        // Crear el controlador con el constructor de testing y sobreescribir exit
+        // Crear el controlador
         exitCalled = new AtomicBoolean(false);
         controlador = new ControladorLogin(vista) {
             @Override
@@ -52,6 +61,16 @@ class ControladorLoginTest {
                 exitCalled.set(true);
             }
         };
+
+        // Inyectar el mock del DAO usando reflection
+        inyectarEmpleadoDAO(controlador, empleadoDAO);
+    }
+
+    private void inyectarEmpleadoDAO(ControladorLogin controlador, EmpleadoDAO empleadoDAO) 
+            throws Exception {
+        Field empleadoDAOField = ControladorLogin.class.getDeclaredField("empleadoDAO");
+        empleadoDAOField.setAccessible(true);
+        empleadoDAOField.set(controlador, empleadoDAO);
     }
 
     @Test
@@ -78,138 +97,81 @@ class ControladorLoginTest {
         // Verificar
         verify(vista).mostrarError("Por favor, complete ambos campos");
         verify(vista, never()).dispose();
+        verify(empleadoDAO, never()).autenticar(anyString(), anyString());
     }
 
     @Test
-    void testVerificarCredenciales_usuarioVacio_muestraError() {
-        // Configurar mocks - usuario vacío, contraseña con valor
-        when(txtUsuario.getText()).thenReturn("");
-        when(txtPassword.getPassword()).thenReturn("123".toCharArray());
-
-        // Ejecutar
-        controlador.verificarCredenciales();
-
-        // Verificar
-        verify(vista).mostrarError("Por favor, complete ambos campos");
-        verify(vista, never()).dispose();
-    }
-
-    @Test
-    void testVerificarCredenciales_passwordVacio_muestraError() {
-        // Configurar mocks - usuario con valor, contraseña vacía
+    void testVerificarCredenciales_autenticacionExitosa_abreSistemaPrincipal() {
+        // Configurar mocks para autenticación exitosa
         when(txtUsuario.getText()).thenReturn("admin");
-        when(txtPassword.getPassword()).thenReturn(new char[0]);
-
-        // Ejecutar
-        controlador.verificarCredenciales();
-
-        // Verificar
-        verify(vista).mostrarError("Por favor, complete ambos campos");
-        verify(vista, never()).dispose();
-    }
-
-    @Test
-    void testVerificarCredenciales_adminCorrecto_abreSistemaPrincipal() {
-        // Configurar mocks para credenciales de admin correctas
-        when(txtUsuario.getText()).thenReturn("admin");
-        when(txtPassword.getPassword()).thenReturn("123".toCharArray());
+        when(txtPassword.getPassword()).thenReturn("password123".toCharArray());
+        when(empleadoDAO.autenticar("admin", "password123")).thenReturn(empleado);
+        when(empleado.getUsuario()).thenReturn("admin");
+        when(empleado.getRol()).thenReturn("ADMIN");
 
         // Mock estático de SwingUtilities
         try (MockedStatic<SwingUtilities> mockedSwing = mockStatic(SwingUtilities.class)) {
             // Ejecutar
             controlador.verificarCredenciales();
 
-            // Verificar que se limpia el formulario y abre sistema principal
+            // Verificar que se autentica correctamente
+            verify(empleadoDAO).autenticar("admin", "password123");
             verify(vista, never()).mostrarError(anyString());
             verify(vista).dispose();
             
             // Verificar que se llama a SwingUtilities.invokeLater
             mockedSwing.verify(() -> SwingUtilities.invokeLater(any(Runnable.class)));
-        }
-    }
-
-    @Test
-    void testVerificarCredenciales_empleadoCorrecto_abreSistemaPrincipal() {
-        // Configurar mocks para credenciales de empleado correctas
-        when(txtUsuario.getText()).thenReturn("empleado");
-        when(txtPassword.getPassword()).thenReturn("123".toCharArray());
-
-        // Mock estático de SwingUtilities
-        try (MockedStatic<SwingUtilities> mockedSwing = mockStatic(SwingUtilities.class)) {
-            // Ejecutar
-            controlador.verificarCredenciales();
-
-            // Verificar que se limpia el formulario y abre sistema principal
-            verify(vista, never()).mostrarError(anyString());
-            verify(vista).dispose();
             
-            // Verificar que se llama a SwingUtilities.invokeLater
-            mockedSwing.verify(() -> SwingUtilities.invokeLater(any(Runnable.class)));
+            // Verificar que se guardó el empleado logueado
+            assertEquals(empleado, controlador.getEmpleadoLogueado());
+            assertEquals("admin", controlador.getUsuarioLogueado());
+            assertEquals("ADMIN", controlador.getRolUsuarioLogueado());
         }
     }
 
     @Test
-    void testVerificarCredenciales_adminUsuarioIncorrecto_muestraError() {
-        // Configurar mocks - usuario admin incorrecto
+    void testVerificarCredenciales_autenticacionFallida_muestraError() {
+        // Configurar mocks para autenticación fallida
+        when(txtUsuario.getText()).thenReturn("usuario");
+        when(txtPassword.getPassword()).thenReturn("password-incorrecto".toCharArray());
+        when(empleadoDAO.autenticar("usuario", "password-incorrecto")).thenReturn(null);
+
+        // Ejecutar
+        controlador.verificarCredenciales();
+
+        // Verificar
+        verify(empleadoDAO).autenticar("usuario", "password-incorrecto");
+        verify(vista).mostrarError("Usuario o contraseña incorrectos");
+        verify(vista).limpiarFormulario();
+        verify(vista, never()).dispose();
+        
+        // Verificar que no hay empleado logueado
+        assertNull(controlador.getEmpleadoLogueado());
+        assertNull(controlador.getUsuarioLogueado());
+        assertNull(controlador.getRolUsuarioLogueado());
+    }
+
+    @Test
+    void testVerificarCredenciales_excepcionEnAutenticacion_muestraError() {
+        // Configurar mocks para excepción en autenticación
         when(txtUsuario.getText()).thenReturn("admin");
-        when(txtPassword.getPassword()).thenReturn("password-incorrecto".toCharArray());
+        when(txtPassword.getPassword()).thenReturn("password123".toCharArray());
+        when(empleadoDAO.autenticar("admin", "password123"))
+            .thenThrow(new RuntimeException("Error de conexión a BD"));
 
         // Ejecutar
         controlador.verificarCredenciales();
 
         // Verificar
-        verify(vista).mostrarError("Usuario o contraseña incorrectos");
-        verify(vista).limpiarFormulario();
-        verify(vista, never()).dispose();
-    }
-
-    @Test
-    void testVerificarCredenciales_empleadoUsuarioIncorrecto_muestraError() {
-        // Configurar mocks - usuario empleado incorrecto
-        when(txtUsuario.getText()).thenReturn("empleado");
-        when(txtPassword.getPassword()).thenReturn("password-incorrecto".toCharArray());
-
-        // Ejecutar
-        controlador.verificarCredenciales();
-
-        // Verificar
-        verify(vista).mostrarError("Usuario o contraseña incorrectos");
-        verify(vista).limpiarFormulario();
-        verify(vista, never()).dispose();
-    }
-
-    @Test
-    void testVerificarCredenciales_usuarioInexistente_muestraError() {
-        // Configurar mocks - usuario que no existe
-        when(txtUsuario.getText()).thenReturn("usuario-inexistente");
-        when(txtPassword.getPassword()).thenReturn("123".toCharArray());
-
-        // Ejecutar
-        controlador.verificarCredenciales();
-
-        // Verificar
-        verify(vista).mostrarError("Usuario o contraseña incorrectos");
-        verify(vista).limpiarFormulario();
+        verify(empleadoDAO).autenticar("admin", "password123");
+        verify(vista).mostrarError("Error de conexión: Error de conexión a BD");
+        verify(vista, never()).limpiarFormulario();
         verify(vista, never()).dispose();
     }
 
 
-    @Test
-    void testVerificarCredenciales_trimUsuario_eliminaEspacios() {
-        // Configurar mocks - usuario con espacios
-        when(txtUsuario.getText()).thenReturn("  admin  ");
-        when(txtPassword.getPassword()).thenReturn("123".toCharArray());
 
-        // Mock estático de SwingUtilities
-        try (MockedStatic<SwingUtilities> mockedSwing = mockStatic(SwingUtilities.class)) {
-            // Ejecutar
-            controlador.verificarCredenciales();
 
-            // Verificar que funciona correctamente a pesar de los espacios
-            verify(vista, never()).mostrarError(anyString());
-            verify(vista).dispose();
-        }
-    }
 
     @Test
     void testSalirSistema_confirmacionTrue_cierraSistema() {
@@ -238,75 +200,45 @@ class ControladorLoginTest {
     }
 
     @Test
-    void testCredencialesConstantes_correctas() {
-        // Verificar que las constantes de credenciales son correctas
-        assertEquals("admin", ControladorLogin.ADMIN_USUARIO);
-        assertEquals("123", ControladorLogin.ADMIN_PASSWORD);
-        assertEquals("empleado", ControladorLogin.EMPLEADO_USUARIO);
-        assertEquals("123", ControladorLogin.EMPLEADO_PASSWORD);
-    }
-
-    @Test
-    void testVerificarCredenciales_passwordConEspacios_funcionaCorrectamente() {
-        // Configurar mocks - contraseña con espacios (debería funcionar igual)
-        when(txtUsuario.getText()).thenReturn("admin");
-        when(txtPassword.getPassword()).thenReturn(" 123 ".toCharArray());
-
-        // Ejecutar
-        controlador.verificarCredenciales();
-
-        // Verificar que falla porque la contraseña con espacios no coincide
-        verify(vista).mostrarError("Usuario o contraseña incorrectos");
-        verify(vista).limpiarFormulario();
-    }
-
-    @Test
-    void testVerificarCredenciales_usuarioMayusculas_muestraError() {
-        // Configurar mocks - usuario en mayúsculas (debería fallar)
-        when(txtUsuario.getText()).thenReturn("ADMIN");
-        when(txtPassword.getPassword()).thenReturn("123".toCharArray());
-
-        // Ejecutar
-        controlador.verificarCredenciales();
-
-        // Verificar que falla porque es case sensitive
-        verify(vista).mostrarError("Usuario o contraseña incorrectos");
-        verify(vista).limpiarFormulario();
-    }
-
-    @Test
-    void testGetUsuarioLogueado_adminCorrecto_retornaUsuario() {
-        // Configurar mocks para credenciales de admin correctas
-        when(txtUsuario.getText()).thenReturn("admin");
-        when(txtPassword.getPassword()).thenReturn("123".toCharArray());
-
-        try (MockedStatic<SwingUtilities> mockedSwing = mockStatic(SwingUtilities.class)) {
-            // Ejecutar
-            controlador.verificarCredenciales();
-
-            // Verificar que se guardó el usuario correctamente
-            assertEquals("admin", controlador.getUsuarioLogueado());
-        }
-    }
-
-    @Test
-    void testGetUsuarioLogueado_empleadoCorrecto_retornaUsuario() {
-        // Configurar mocks para credenciales de empleado correctas
+    void testGetEmpleadoLogueado_autenticacionExitosa_retornaEmpleado() {
+        // Configurar mocks para autenticación exitosa
         when(txtUsuario.getText()).thenReturn("empleado");
-        when(txtPassword.getPassword()).thenReturn("123".toCharArray());
+        when(txtPassword.getPassword()).thenReturn("password456".toCharArray());
+        when(empleadoDAO.autenticar("empleado", "password456")).thenReturn(empleado);
+        when(empleado.getUsuario()).thenReturn("empleado");
+        when(empleado.getRol()).thenReturn("EMPLEADO");
 
         try (MockedStatic<SwingUtilities> mockedSwing = mockStatic(SwingUtilities.class)) {
             // Ejecutar
             controlador.verificarCredenciales();
 
-            // Verificar que se guardó el usuario correctamente
+            // Verificar que se guardó el empleado correctamente
+            assertEquals(empleado, controlador.getEmpleadoLogueado());
             assertEquals("empleado", controlador.getUsuarioLogueado());
+            assertEquals("EMPLEADO", controlador.getRolUsuarioLogueado());
         }
     }
 
     @Test
-    void testGetUsuarioLogueado_sinLogin_retornaNull() {
+    void testGetEmpleadoLogueado_sinLogin_retornaNull() {
         // Verificar que inicialmente es null
+        assertNull(controlador.getEmpleadoLogueado());
         assertNull(controlador.getUsuarioLogueado());
+        assertNull(controlador.getRolUsuarioLogueado());
+    }
+
+
+
+    @Test
+    void testCrearEmpleadoDAO_retornaNuevaInstancia() {
+        // Probar el método factory por defecto
+        ControladorLogin controladorConFactory = new ControladorLogin(vista);
+        
+        // No podemos verificar fácilmente la instancia concreta, pero al menos
+        // verificamos que no lance excepción
+        assertDoesNotThrow(() -> {
+            EmpleadoDAO dao = controladorConFactory.crearEmpleadoDAO();
+            assertNotNull(dao);
+        });
     }
 }

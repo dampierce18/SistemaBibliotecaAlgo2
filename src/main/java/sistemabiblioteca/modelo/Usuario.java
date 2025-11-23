@@ -9,6 +9,7 @@ public class Usuario {
     private String telefono;
     private int sanciones;
     private int montoSancion;
+    private int empleadoId;
     
     public Usuario() {
         this.sanciones = 0;
@@ -16,7 +17,7 @@ public class Usuario {
     }
     
     public Usuario(String nombre, String apellidoPaterno, String apellidoMaterno, 
-                   String domicilio, String telefono) {
+                   String domicilio, String telefono, int empleadoId) {
         this.nombre = nombre;
         this.apellidoPaterno = apellidoPaterno;
         this.apellidoMaterno = apellidoMaterno;
@@ -24,8 +25,16 @@ public class Usuario {
         this.telefono = telefono;
         this.sanciones = 0;
         this.montoSancion = 0;
+        this.empleadoId = empleadoId;
     }
 
+    public String getNombreCompleto() {
+        String nombreCompleto = nombre + " " + apellidoPaterno;
+        if (apellidoMaterno != null && !apellidoMaterno.trim().isEmpty()) {
+            nombreCompleto += " " + apellidoMaterno;
+        }
+        return nombreCompleto.trim();
+    }
 
     public void setId(int id) {
         this.id = id;
@@ -90,4 +99,9 @@ public class Usuario {
     public int getMontoSancion() {
         return montoSancion;
     }
+    
+    
+    public int getEmpleadoId() { return empleadoId; } 
+    public void setEmpleadoId(int empleadoId) { this.empleadoId = empleadoId; }	
+    
 }

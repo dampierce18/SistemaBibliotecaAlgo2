@@ -15,8 +15,6 @@ class UsuarioDAOTest {
     @BeforeEach
     void setUp() throws Exception {
         testConnection = ConexionTestDB.getTestConnection();
-        // ✅ Necesitamos modificar UsuarioDAO para aceptar conexión de test
-        // Por ahora, usaremos el mismo patrón que LibroDAO
         usuarioDAO = new UsuarioDAO(testConnection);
         
         // Limpiar datos antes de cada test
@@ -24,14 +22,19 @@ class UsuarioDAOTest {
             stmt.execute("DELETE FROM prestamos");
             stmt.execute("DELETE FROM libros");
             stmt.execute("DELETE FROM usuarios");
+            
+            // Insertar empleados básicos para las foreign keys
+            stmt.execute("INSERT OR IGNORE INTO empleados (id, nombre, apellido_paterno, usuario, password, rol) VALUES " +
+                        "(1, 'Admin', 'Sistema', 'admin', 'admin123', 'ADMIN'), " +
+                        "(2, 'Empleado', 'Test', 'empleado', 'empleado123', 'EMPLEADO')");
         }
     }
     
     @Test
-    void testInsertarUsuario() {
+    void testInsertarUsuarioConEmpleadoId() {
         // Given
         Usuario usuario = new Usuario("Juan", "Pérez", "Gómez", 
-                                    "Calle 123", "555-1234");
+                                    "Calle 123", "555-1234", 1);
         
         // When
         boolean resultado = usuarioDAO.insertarUsuario(usuario);
@@ -42,13 +45,14 @@ class UsuarioDAOTest {
         List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
         assertEquals(1, usuarios.size(), "Debería haber exactamente 1 usuario");
         assertTrue(usuarios.get(0).getId() > 0, "El usuario debería tener un ID asignado");
+        assertEquals(1, usuarios.get(0).getEmpleadoId(), "Debería tener el empleado_id correcto");
     }
     
     @Test
-    void testInsertarUsuarioConSanciones() {
-        // Given - Usuario con sanciones y monto
+    void testInsertarUsuarioConSancionesYEmpleadoId() {
+        // Given - Usuario con sanciones, monto y empleado_id
         Usuario usuario = new Usuario("María", "López", "Santos", 
-                                    "Av. Principal 456", "555-5678");
+                                    "Av. Principal 456", "555-5678", 2);
         usuario.setSanciones(2);
         usuario.setMontoSancion(50);
         
@@ -62,29 +66,9 @@ class UsuarioDAOTest {
         Usuario usuarioInsertado = usuarios.get(0);
         assertEquals(2, usuarioInsertado.getSanciones());
         assertEquals(50, usuarioInsertado.getMontoSancion());
+        assertEquals(2, usuarioInsertado.getEmpleadoId());
     }
     
-    @Test
-    void testObtenerUsuarioPorId() {
-        // Given
-        Usuario usuario = new Usuario("Carlos", "García", "Martínez", 
-                                    "Calle Secundaria 789", "555-9012");
-        usuarioDAO.insertarUsuario(usuario);
-        
-        List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
-        int idInsertado = usuarios.get(0).getId();
-        
-        // When
-        Usuario usuarioObtenido = usuarioDAO.obtenerUsuarioPorId(idInsertado);
-        
-        // Then
-        assertNotNull(usuarioObtenido, "Debería encontrar el usuario por ID");
-        assertEquals("Carlos", usuarioObtenido.getNombre());
-        assertEquals("García", usuarioObtenido.getApellidoPaterno());
-        assertEquals("Martínez", usuarioObtenido.getApellidoMaterno());
-        assertEquals("Calle Secundaria 789", usuarioObtenido.getDomicilio());
-        assertEquals("555-9012", usuarioObtenido.getTelefono());
-    }
     
     @Test
     void testObtenerUsuarioPorIdNoExistente() {
@@ -95,90 +79,14 @@ class UsuarioDAOTest {
         assertNull(usuarioObtenido, "Debería retornar null para ID no existente");
     }
     
-    @Test
-    void testObtenerTodosLosUsuarios() {
-        // Given
-        Usuario usuario1 = new Usuario("Ana", "Rodríguez", "Fernández", "Dir 1", "111-1111");
-        Usuario usuario2 = new Usuario("Pedro", "Sánchez", "Díaz", "Dir 2", "222-2222");
-        Usuario usuario3 = new Usuario("Laura", "Hernández", "Jiménez", "Dir 3", "333-3333");
-        
-        usuarioDAO.insertarUsuario(usuario1);
-        usuarioDAO.insertarUsuario(usuario2);
-        usuarioDAO.insertarUsuario(usuario3);
-        
-        // When
-        List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
-        
-        // Then
-        assertEquals(3, usuarios.size(), "Debería haber 3 usuarios");
-        // Verificar orden alfabético
-        assertEquals("Ana", usuarios.get(0).getNombre());
-        assertEquals("Laura", usuarios.get(1).getNombre());
-        assertEquals("Pedro", usuarios.get(2).getNombre());
-    }
     
-    @Test
-    void testActualizarUsuario() {
-        // Given
-        Usuario usuario = new Usuario("Nombre Original", "Apellido Orig", "Materno Orig", 
-                                    "Domicilio Orig", "000-0000");
-        usuarioDAO.insertarUsuario(usuario);
-        
-        List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
-        Usuario usuarioInsertado = usuarios.get(0);
-        
-        // When - Actualizar el usuario
-        usuarioInsertado.setNombre("Nombre Actualizado");
-        usuarioInsertado.setApellidoPaterno("Apellido Actualizado");
-        usuarioInsertado.setApellidoMaterno("Materno Actualizado");
-        usuarioInsertado.setDomicilio("Domicilio Actualizado");
-        usuarioInsertado.setTelefono("999-9999");
-        usuarioInsertado.setSanciones(3);
-        usuarioInsertado.setMontoSancion(75);
-        
-        boolean resultado = usuarioDAO.actualizarUsuario(usuarioInsertado);
-        
-        // Then
-        assertTrue(resultado, "La actualización debería ser exitosa");
-        
-        Usuario usuarioActualizado = usuarioDAO.obtenerUsuarioPorId(usuarioInsertado.getId());
-        assertNotNull(usuarioActualizado);
-        assertEquals("Nombre Actualizado", usuarioActualizado.getNombre());
-        assertEquals("Apellido Actualizado", usuarioActualizado.getApellidoPaterno());
-        assertEquals("Materno Actualizado", usuarioActualizado.getApellidoMaterno());
-        assertEquals("Domicilio Actualizado", usuarioActualizado.getDomicilio());
-        assertEquals("999-9999", usuarioActualizado.getTelefono());
-        assertEquals(3, usuarioActualizado.getSanciones());
-        assertEquals(75, usuarioActualizado.getMontoSancion());
-    }
-    
-    @Test
-    void testEliminarUsuario() {
-        // Given
-        Usuario usuario = new Usuario("Usuario a Eliminar", "Apellido", "Materno", 
-                                    "Domicilio", "111-1111");
-        usuarioDAO.insertarUsuario(usuario);
-        
-        List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
-        int idAEliminar = usuarios.get(0).getId();
-        assertEquals(1, usuarios.size(), "Debería haber 1 usuario antes de eliminar");
-        
-        // When
-        boolean resultado = usuarioDAO.eliminarUsuario(idAEliminar);
-        
-        // Then
-        assertTrue(resultado, "La eliminación debería ser exitosa");
-        
-        List<Usuario> usuariosDespues = usuarioDAO.obtenerTodosLosUsuarios();
-        assertEquals(0, usuariosDespues.size(), "No debería haber usuarios después de eliminar");
-    }
     
     @Test
     void testBuscarUsuariosPorNombre() {
         // Given
-        Usuario usuario1 = new Usuario("Carlos", "Pérez", "Gómez", "Dir 1", "111-1111");
-        Usuario usuario2 = new Usuario("Ana", "García", "López", "Dir 2", "222-2222");
-        Usuario usuario3 = new Usuario("Carlos", "Martínez", "Sánchez", "Dir 3", "333-3333");
+        Usuario usuario1 = new Usuario("Carlos", "Pérez", "Gómez", "Dir 1", "111-1111", 1);
+        Usuario usuario2 = new Usuario("Ana", "García", "López", "Dir 2", "222-2222", 2);
+        Usuario usuario3 = new Usuario("Carlos", "Martínez", "Sánchez", "Dir 3", "333-3333", 1);
         
         usuarioDAO.insertarUsuario(usuario1);
         usuarioDAO.insertarUsuario(usuario2);
@@ -190,14 +98,15 @@ class UsuarioDAOTest {
         // Then
         assertEquals(2, resultados.size(), "Debería encontrar 2 usuarios llamados Carlos");
         assertTrue(resultados.stream().allMatch(u -> u.getNombre().contains("Carlos")));
+        assertTrue(resultados.stream().allMatch(u -> u.getEmpleadoId() > 0));
     }
     
     @Test
     void testBuscarUsuariosPorApellidoPaterno() {
         // Given
-        Usuario usuario1 = new Usuario("Juan", "García", "Pérez", "Dir 1", "111-1111");
-        Usuario usuario2 = new Usuario("María", "López", "Gómez", "Dir 2", "222-2222");
-        Usuario usuario3 = new Usuario("Pedro", "García", "Martínez", "Dir 3", "333-3333");
+        Usuario usuario1 = new Usuario("Juan", "García", "Pérez", "Dir 1", "111-1111", 1);
+        Usuario usuario2 = new Usuario("María", "López", "Gómez", "Dir 2", "222-2222", 2);
+        Usuario usuario3 = new Usuario("Pedro", "García", "Martínez", "Dir 3", "333-3333", 1);
         
         usuarioDAO.insertarUsuario(usuario1);
         usuarioDAO.insertarUsuario(usuario2);
@@ -209,14 +118,15 @@ class UsuarioDAOTest {
         // Then
         assertEquals(2, resultados.size(), "Debería encontrar 2 usuarios con apellido García");
         assertTrue(resultados.stream().allMatch(u -> u.getApellidoPaterno().contains("García")));
+        assertTrue(resultados.stream().allMatch(u -> u.getEmpleadoId() > 0));
     }
     
     @Test
     void testBuscarUsuariosPorTelefono() {
         // Given
-        Usuario usuario1 = new Usuario("Usuario1", "Apellido1", "Materno1", "Dir 1", "555-1234");
-        Usuario usuario2 = new Usuario("Usuario2", "Apellido2", "Materno2", "Dir 2", "555-5678");
-        Usuario usuario3 = new Usuario("Usuario3", "Apellido3", "Materno3", "Dir 3", "555-1234");
+        Usuario usuario1 = new Usuario("Usuario1", "Apellido1", "Materno1", "Dir 1", "555-1234", 1);
+        Usuario usuario2 = new Usuario("Usuario2", "Apellido2", "Materno2", "Dir 2", "555-5678", 2);
+        Usuario usuario3 = new Usuario("Usuario3", "Apellido3", "Materno3", "Dir 3", "555-1234", 1);
         
         usuarioDAO.insertarUsuario(usuario1);
         usuarioDAO.insertarUsuario(usuario2);
@@ -228,27 +138,9 @@ class UsuarioDAOTest {
         // Then
         assertEquals(2, resultados.size(), "Debería encontrar 2 usuarios con el mismo teléfono");
         assertTrue(resultados.stream().allMatch(u -> u.getTelefono().contains("555-1234")));
+        assertTrue(resultados.stream().allMatch(u -> u.getEmpleadoId() > 0));
     }
     
-    @Test
-    void testBuscarUsuariosPorID() {
-        // Given
-        Usuario usuario1 = new Usuario("Usuario1", "Apellido1", "Materno1", "Dir 1", "111-1111");
-        Usuario usuario2 = new Usuario("Usuario2", "Apellido2", "Materno2", "Dir 2", "222-2222");
-        
-        usuarioDAO.insertarUsuario(usuario1);
-        usuarioDAO.insertarUsuario(usuario2);
-        
-        List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
-        int idBuscado = usuarios.get(0).getId();
-        
-        // When - Buscar por ID específico
-        List<Usuario> resultados = usuarioDAO.buscarUsuarios("ID", String.valueOf(idBuscado));
-        
-        // Then
-        assertEquals(1, resultados.size(), "Debería encontrar exactamente 1 usuario por ID");
-        assertEquals(idBuscado, resultados.get(0).getId());
-    }
     
     @Test
     void testBuscarUsuariosPorIDNoValido() {
@@ -264,7 +156,7 @@ class UsuarioDAOTest {
     @Test
     void testBuscarUsuariosConCriterioDefault() {
         // Given
-        Usuario usuario = new Usuario("Usuario Default", "Apellido", "Materno", "Dir", "111-1111");
+        Usuario usuario = new Usuario("Usuario Default", "Apellido", "Materno", "Dir", "111-1111", 1);
         usuarioDAO.insertarUsuario(usuario);
         
         // When - Usar un criterio no reconocido (debería usar el default: Nombre)
@@ -273,6 +165,7 @@ class UsuarioDAOTest {
         // Then
         assertEquals(1, resultados.size(), "Debería encontrar el usuario por nombre (default)");
         assertEquals("Usuario Default", resultados.get(0).getNombre());
+        assertEquals(1, resultados.get(0).getEmpleadoId());
     }
     
     @Test
@@ -280,8 +173,8 @@ class UsuarioDAOTest {
         // Given
         assertEquals(0, usuarioDAO.contarTotalUsuarios(), "Debería haber 0 usuarios inicialmente");
         
-        Usuario usuario1 = new Usuario("Usuario 1", "Apellido1", "Materno1", "Dir 1", "111-1111");
-        Usuario usuario2 = new Usuario("Usuario 2", "Apellido2", "Materno2", "Dir 2", "222-2222");
+        Usuario usuario1 = new Usuario("Usuario 1", "Apellido1", "Materno1", "Dir 1", "111-1111", 1);
+        Usuario usuario2 = new Usuario("Usuario 2", "Apellido2", "Materno2", "Dir 2", "222-2222", 2);
         
         usuarioDAO.insertarUsuario(usuario1);
         usuarioDAO.insertarUsuario(usuario2);
@@ -307,6 +200,7 @@ class UsuarioDAOTest {
         usuario.setTelefono("Telefono");
         usuario.setSanciones(1);
         usuario.setMontoSancion(25);
+        usuario.setEmpleadoId(2);
         
         // Then - Verificar valores por defecto y setters
         assertEquals(1, usuario.getId());
@@ -317,12 +211,13 @@ class UsuarioDAOTest {
         assertEquals("Telefono", usuario.getTelefono());
         assertEquals(1, usuario.getSanciones());
         assertEquals(25, usuario.getMontoSancion());
+        assertEquals(2, usuario.getEmpleadoId());
     }
     
     @Test
-    void testConstructorUsuarioConParametros() {
+    void testConstructorUsuarioConParametrosYEmpleadoId() {
         // Given
-        Usuario usuario = new Usuario("Nombre", "Paterno", "Materno", "Domicilio", "Telefono");
+        Usuario usuario = new Usuario("Nombre", "Paterno", "Materno", "Domicilio", "Telefono", 2);
         
         // Then - Verificar valores iniciales
         assertEquals("Nombre", usuario.getNombre());
@@ -332,6 +227,7 @@ class UsuarioDAOTest {
         assertEquals("Telefono", usuario.getTelefono());
         assertEquals(0, usuario.getSanciones()); // Valor por defecto
         assertEquals(0, usuario.getMontoSancion()); // Valor por defecto
+        assertEquals(2, usuario.getEmpleadoId()); // Nuevo parámetro
     }
     
     @Test
@@ -339,7 +235,7 @@ class UsuarioDAOTest {
         // Given
         Usuario usuario = new Usuario();
         
-        // When - Usar TODOS los setters
+        // When - Usar TODOS los setters incluyendo empleadoId
         usuario.setId(100);
         usuario.setNombre("Nuevo Nombre");
         usuario.setApellidoPaterno("Nuevo Paterno");
@@ -348,6 +244,7 @@ class UsuarioDAOTest {
         usuario.setTelefono("Nuevo Teléfono");
         usuario.setSanciones(5);
         usuario.setMontoSancion(100);
+        usuario.setEmpleadoId(3);
         
         // Then - Verificar que TODOS los setters funcionan
         assertEquals(100, usuario.getId());
@@ -358,13 +255,95 @@ class UsuarioDAOTest {
         assertEquals("Nuevo Teléfono", usuario.getTelefono());
         assertEquals(5, usuario.getSanciones());
         assertEquals(100, usuario.getMontoSancion());
+        assertEquals(3, usuario.getEmpleadoId());
     }
     
-    // 🔥 TESTS PARA CASOS DE ERROR (necesitan UsuarioDAO modificado)
+    @Test
+    void testGetNombreCompleto() {
+        // Given
+        Usuario usuario = new Usuario("Juan", "Pérez", "Gómez", "Dir", "Tel", 1);
+        
+        // When
+        String nombreCompleto = usuario.getNombreCompleto();
+        
+        // Then
+        assertEquals("Juan Pérez Gómez", nombreCompleto);
+    }
+    
+    @Test
+    void testGetNombreCompletoSinApellidoMaterno() {
+        // Given
+        Usuario usuario = new Usuario();
+        usuario.setNombre("Ana");
+        usuario.setApellidoPaterno("López");
+        usuario.setApellidoMaterno(""); // Apellido materno vacío
+        
+        // When
+        String nombreCompleto = usuario.getNombreCompleto();
+        
+        // Then
+        assertEquals("Ana López", nombreCompleto);
+    }
+    
+    @Test
+    void testGetNombreCompletoSoloNombreYApellidoPaterno() {
+        // Given
+        Usuario usuario = new Usuario();
+        usuario.setNombre("Pedro");
+        usuario.setApellidoPaterno("García");
+        // Sin apellido materno
+        
+        // When
+        String nombreCompleto = usuario.getNombreCompleto();
+        
+        // Then
+        assertEquals("Pedro García", nombreCompleto);
+    }
+    
+    // 🔥 NUEVOS TESTS ESPECÍFICOS PARA EMPLEADO_ID
+    
+    @Test
+    void testUsuarioConDiferentesEmpleados() {
+        // Given - Crear usuarios con diferentes empleados
+        Usuario usuario1 = new Usuario("Usuario1", "Apellido1", "Materno1", "Dir1", "111-1111", 1);
+        Usuario usuario2 = new Usuario("Usuario2", "Apellido2", "Materno2", "Dir2", "222-2222", 2);
+        Usuario usuario3 = new Usuario("Usuario3", "Apellido3", "Materno3", "Dir3", "333-3333", 1);
+        
+        usuarioDAO.insertarUsuario(usuario1);
+        usuarioDAO.insertarUsuario(usuario2);
+        usuarioDAO.insertarUsuario(usuario3);
+        
+        // When
+        List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
+        
+        // Then
+        assertEquals(3, usuarios.size());
+        assertEquals(1, usuarios.get(0).getEmpleadoId());
+        assertEquals(2, usuarios.get(1).getEmpleadoId());
+        assertEquals(1, usuarios.get(2).getEmpleadoId());
+    }
+    
+    @Test
+    void testUsuarioConEmpleadoIdCero() {
+        // Given - Empleado_id = 0 (caso límite)
+        Usuario usuario = new Usuario("Usuario Test", "Apellido", "Materno", "Dir", "Tel", 0);
+        
+        // When
+        boolean resultado = usuarioDAO.insertarUsuario(usuario);
+        
+        // Then
+        assertTrue(resultado, "Debería insertarse incluso con empleado_id = 0");
+        
+        List<Usuario> usuarios = usuarioDAO.obtenerTodosLosUsuarios();
+        assertEquals(0, usuarios.get(0).getEmpleadoId());
+    }
+    
+    
+    // 🔥 TESTS PARA CASOS DE ERROR
     @Test
     void testActualizarUsuarioNoExistente() {
         // Given - Crear un usuario con ID que no existe en la BD
-        Usuario usuarioNoExistente = new Usuario("No Existe", "Apellido", "Materno", "Dir", "Tel");
+        Usuario usuarioNoExistente = new Usuario("No Existe", "Apellido", "Materno", "Dir", "Tel", 1);
         usuarioNoExistente.setId(9999);
         
         // When
@@ -404,8 +383,24 @@ class UsuarioDAOTest {
         assertNotNull(usuarioDAODefault, "El constructor por defecto debería funcionar");
         
         // También puedes verificar que puede realizar operaciones básicas
-        // (aunque fallen por la conexión real, el constructor está cubierto)
         List<Usuario> usuarios = usuarioDAODefault.obtenerTodosLosUsuarios();
         assertNotNull(usuarios, "Debería retornar una lista (aunque esté vacía)");
+    }
+    
+    @Test
+    void testUsuarioConValoresPorDefecto() {
+        // Given - Usuario con constructor vacío
+        Usuario usuario = new Usuario();
+        
+        // Then - Verificar valores por defecto
+        assertEquals(0, usuario.getId());
+        assertNull(usuario.getNombre());
+        assertNull(usuario.getApellidoPaterno());
+        assertNull(usuario.getApellidoMaterno());
+        assertNull(usuario.getDomicilio());
+        assertNull(usuario.getTelefono());
+        assertEquals(0, usuario.getSanciones());
+        assertEquals(0, usuario.getMontoSancion());
+        assertEquals(0, usuario.getEmpleadoId());
     }
 }

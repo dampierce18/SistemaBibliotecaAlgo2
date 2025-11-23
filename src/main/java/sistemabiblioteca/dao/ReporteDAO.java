@@ -28,47 +28,61 @@ public class ReporteDAO {
     public Map<String, Integer> obtenerResumenMes() {
         Map<String, Integer> resumen = new HashMap<>();
         
-        String sqlPrestamosMes = """
-            SELECT COUNT(*) as total 
-            FROM prestamos 
-            WHERE strftime('%Y-%m', fecha_prestamo) = strftime('%Y-%m', 'now')
-            """;
+        try (Connection conn = getConnection()) {
+            // Préstamos del mes actual
+            String sqlPrestamosMes = """
+                SELECT COUNT(*) as total FROM prestamos 
+                WHERE strftime('%Y-%m', fecha_prestamo) = strftime('%Y-%m', 'now')
+                """;
             
-        String sqlPrestamosActivos = "SELECT COUNT(*) as total FROM prestamos WHERE estado = 'ACTIVO'";
-        String sqlPrestamosAtrasados = "SELECT COUNT(*) as total FROM prestamos WHERE estado = 'ACTIVO' AND fecha_devolucion < date('now')";
-        String sqlUsuariosSancionados = "SELECT COUNT(*) as total FROM usuarios WHERE sanciones > 0";
-        String sqlMultasPendientes = "SELECT COALESCE(SUM(monto_sancion), 0) as total FROM usuarios WHERE monto_sancion > 0";
-        
-        Statement stmt = null;
-        ResultSet rs = null;
-        
-        try {
-            Connection conn = getConnection();
-            stmt = conn.createStatement();
+            // Préstamos activos
+            String sqlPrestamosActivos = """
+                SELECT COUNT(*) as total FROM prestamos 
+                WHERE estado = 'ACTIVO'
+                """;
             
-            rs = stmt.executeQuery(sqlPrestamosMes);
-            resumen.put("prestamos_mes", rs.getInt("total"));
+            // Préstamos atrasados - VERIFICAR ESTA CONSULTA
+            String sqlPrestamosAtrasados = """
+                SELECT COUNT(*) as total FROM prestamos 
+                WHERE estado = 'ATRASADO'
+                """;
             
-            rs = stmt.executeQuery(sqlPrestamosActivos);
-            resumen.put("prestamos_activos", rs.getInt("total"));
+            // Usuarios sancionados
+            String sqlUsuariosSancionados = """
+                SELECT COUNT(*) as total FROM usuarios 
+                WHERE sanciones > 0
+                """;
             
-            rs = stmt.executeQuery(sqlPrestamosAtrasados);
-            resumen.put("prestamos_atrasados", rs.getInt("total"));
+            // Multas pendientes
+            String sqlMultasPendientes = """
+                SELECT SUM(monto_sancion) as total FROM usuarios 
+                WHERE monto_sancion > 0
+                """;
             
-            rs = stmt.executeQuery(sqlUsuariosSancionados);
-            resumen.put("usuarios_sancionados", rs.getInt("total"));
-            
-            rs = stmt.executeQuery(sqlMultasPendientes);
-            resumen.put("multas_pendientes", rs.getInt("total"));
+            try (Statement stmt = conn.createStatement()) {
+                // Préstamos del mes
+                ResultSet rs = stmt.executeQuery(sqlPrestamosMes);
+                if (rs.next()) resumen.put("prestamos_mes", rs.getInt("total"));
+                
+                // Préstamos activos
+                rs = stmt.executeQuery(sqlPrestamosActivos);
+                if (rs.next()) resumen.put("prestamos_activos", rs.getInt("total"));
+                
+                // Préstamos atrasados
+                rs = stmt.executeQuery(sqlPrestamosAtrasados);
+                if (rs.next()) resumen.put("prestamos_atrasados", rs.getInt("total"));
+                
+                // Usuarios sancionados
+                rs = stmt.executeQuery(sqlUsuariosSancionados);
+                if (rs.next()) resumen.put("usuarios_sancionados", rs.getInt("total"));
+                
+                // Multas pendientes
+                rs = stmt.executeQuery(sqlMultasPendientes);
+                if (rs.next()) resumen.put("multas_pendientes", rs.getInt("total"));
+            }
             
         } catch (SQLException e) {
-        } finally {
-            if (rs != null) {
-                try { rs.close(); } catch (SQLException e) { }
-            }
-            if (stmt != null) {
-                try { stmt.close(); } catch (SQLException e) { }
-            }
+            System.err.println("Error obteniendo resumen del mes: " + e.getMessage());
         }
         
         return resumen;

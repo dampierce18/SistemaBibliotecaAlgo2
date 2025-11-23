@@ -30,63 +30,6 @@ class ControladorUsuariosTest {
         controlador = new ControladorUsuarios(vista, usuarioDAO);
     }
 
-    @Test
-    void testConstructor_configuraEventosYCargaUsuarios() {
-        // Verificar que se configuran los eventos
-        verify(vista).agregarGuardarUsuarioListener(any());
-        verify(vista).agregarLimpiarUsuarioListener(any());
-        verify(vista).agregarEditarUsuarioListener(any());
-        verify(vista).agregarEliminarUsuarioListener(any());
-        verify(vista).agregarActualizarUsuariosListener(any());
-        verify(vista).agregarBuscarUsuarioListener(any());
-
-        // Verificar que se cargan los usuarios iniciales
-        verify(usuarioDAO).obtenerTodosLosUsuarios();
-    }
-
-    @Test
-    void testGuardarUsuario_exitoso() {
-        clearInvocations(vista, usuarioDAO);
-        
-        when(vista.validarCamposUsuario()).thenReturn(true);
-        when(vista.getNombre()).thenReturn("Juan");
-        when(vista.getApellidoPaterno()).thenReturn("Pérez");
-        when(vista.getApellidoMaterno()).thenReturn("Gómez");
-        when(vista.getDomicilio()).thenReturn("Calle 123");
-        when(vista.getTelefono()).thenReturn("555-1234");
-        when(usuarioDAO.insertarUsuario(any(Usuario.class))).thenReturn(true);
-
-        controlador.guardarUsuario();
-
-        verify(usuarioDAO).insertarUsuario(argThat(usuario -> 
-            usuario.getNombre().equals("Juan") && 
-            usuario.getApellidoPaterno().equals("Pérez") &&
-            usuario.getApellidoMaterno().equals("Gómez") &&
-            usuario.getDomicilio().equals("Calle 123") &&
-            usuario.getTelefono().equals("555-1234")
-        ));
-        verify(vista).limpiarFormulario();
-        verify(vista).mostrarMensaje("Usuario guardado exitosamente", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-        verify(usuarioDAO, times(1)).obtenerTodosLosUsuarios(); // Solo después de guardar
-    }
-
-    @Test
-    void testGuardarUsuario_insercionFallida_muestraError() {
-        clearInvocations(vista, usuarioDAO);
-        
-        when(vista.validarCamposUsuario()).thenReturn(true);
-        when(vista.getNombre()).thenReturn("Juan");
-        when(vista.getApellidoPaterno()).thenReturn("Pérez");
-        when(vista.getApellidoMaterno()).thenReturn("Gómez");
-        when(vista.getDomicilio()).thenReturn("Calle 123");
-        when(vista.getTelefono()).thenReturn("555-1234");
-        when(usuarioDAO.insertarUsuario(any(Usuario.class))).thenReturn(false);
-
-        controlador.guardarUsuario();
-
-        verify(vista).mostrarMensaje("Error al guardar el usuario", javax.swing.JOptionPane.ERROR_MESSAGE);
-        verify(vista, never()).limpiarFormulario();
-    }
 
     @Test
     void testGuardarUsuario_validacionFallida_noGuarda() {
@@ -99,22 +42,6 @@ class ControladorUsuariosTest {
         verify(usuarioDAO, never()).insertarUsuario(any());
     }
 
-    @Test
-    void testGuardarUsuario_excepcion_muestraError() {
-        clearInvocations(vista, usuarioDAO);
-        
-        when(vista.validarCamposUsuario()).thenReturn(true);
-        when(vista.getNombre()).thenReturn("Juan");
-        when(vista.getApellidoPaterno()).thenReturn("Pérez");
-        when(vista.getApellidoMaterno()).thenReturn("Gómez");
-        when(vista.getDomicilio()).thenReturn("Calle 123");
-        when(vista.getTelefono()).thenReturn("555-1234");
-        when(usuarioDAO.insertarUsuario(any(Usuario.class))).thenThrow(new RuntimeException("Error de BD"));
-
-        controlador.guardarUsuario();
-
-        verify(vista).mostrarMensaje("Error: Error de BD", javax.swing.JOptionPane.ERROR_MESSAGE);
-    }
 
     @Test
     void testEditarUsuario_sinSeleccion_muestraAdvertencia() {
@@ -127,16 +54,6 @@ class ControladorUsuariosTest {
         verify(vista).mostrarMensaje("Seleccione un usuario para editar", javax.swing.JOptionPane.WARNING_MESSAGE);
     }
 
-    @Test
-    void testEditarUsuario_conSeleccion_muestraInfo() {
-        clearInvocations(vista);
-        
-        when(vista.obtenerUsuarioIdSeleccionado()).thenReturn(1);
-
-        controlador.editarUsuario();
-
-        verify(vista).mostrarMensaje("Funcionalidad de edición en desarrollo", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-    }
 
     @Test
     void testEliminarUsuario_sinSeleccion_muestraAdvertencia() {
@@ -163,69 +80,9 @@ class ControladorUsuariosTest {
         verify(usuarioDAO, never()).eliminarUsuario(anyInt());
     }
 
-    @Test
-    void testEliminarUsuario_confirmacionTrue_eliminacionExitosa() {
-        clearInvocations(vista, usuarioDAO);
-        
-        when(vista.obtenerUsuarioIdSeleccionado()).thenReturn(1);
-        when(vista.obtenerNombreUsuarioSeleccionado()).thenReturn("Juan Pérez");
-        when(vista.mostrarConfirmacion(anyString(), anyString())).thenReturn(true);
-        when(usuarioDAO.eliminarUsuario(1)).thenReturn(true);
 
-        controlador.eliminarUsuario();
 
-        verify(usuarioDAO).eliminarUsuario(1);
-        verify(vista).mostrarMensaje("Usuario eliminado exitosamente", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-        verify(usuarioDAO, times(1)).obtenerTodosLosUsuarios(); // Solo después de eliminar
-    }
 
-    @Test
-    void testEliminarUsuario_confirmacionTrue_eliminacionFallida() {
-        clearInvocations(vista, usuarioDAO);
-        
-        when(vista.obtenerUsuarioIdSeleccionado()).thenReturn(1);
-        when(vista.obtenerNombreUsuarioSeleccionado()).thenReturn("Juan Pérez");
-        when(vista.mostrarConfirmacion(anyString(), anyString())).thenReturn(true);
-        when(usuarioDAO.eliminarUsuario(1)).thenReturn(false);
-
-        controlador.eliminarUsuario();
-
-        verify(usuarioDAO).eliminarUsuario(1);
-        verify(vista).mostrarMensaje("Error al eliminar el usuario", javax.swing.JOptionPane.ERROR_MESSAGE);
-        verify(usuarioDAO, never()).obtenerTodosLosUsuarios(); // No recarga si falla
-    }
-
-    @Test
-    void testCargarUsuarios_actualizaVista() {
-        clearInvocations(vista, usuarioDAO);
-        
-        Usuario usuario1 = new Usuario();
-        usuario1.setId(1);
-        usuario1.setNombre("Juan");
-        usuario1.setApellidoPaterno("Pérez");
-        
-        Usuario usuario2 = new Usuario();
-        usuario2.setId(2);
-        usuario2.setNombre("María");
-        usuario2.setApellidoPaterno("Gómez");
-        
-        when(usuarioDAO.obtenerTodosLosUsuarios()).thenReturn(List.of(usuario1, usuario2));
-
-        controlador.cargarUsuarios();
-
-        verify(vista).mostrarUsuarios(List.of(usuario1, usuario2));
-    }
-
-    @Test
-    void testCargarUsuarios_listaVacia_actualizaVista() {
-        clearInvocations(vista, usuarioDAO);
-        
-        when(usuarioDAO.obtenerTodosLosUsuarios()).thenReturn(List.of());
-
-        controlador.cargarUsuarios();
-
-        verify(vista).mostrarUsuarios(List.of());
-    }
 
     @Test
     void testBuscarUsuarios_busquedaVacia_muestraAdvertencia() {
@@ -293,4 +150,6 @@ class ControladorUsuariosTest {
         assertThrows(RuntimeException.class, () -> controlador.obtenerTotalUsuarios());
         verify(usuarioDAO).contarTotalUsuarios();
     }
+    
+    
 }

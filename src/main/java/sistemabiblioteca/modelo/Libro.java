@@ -9,8 +9,9 @@ public class Libro {
     private String editorial;
     private int total;
     private int disponibles;
+    private int EmpleadoId;
 
-    public Libro(int id, String titulo, String fecha, String autor, String categoria, String editorial, int total, int disponibles) {
+    public Libro(int id, String titulo, String fecha, String autor, String categoria, String editorial, int total, int disponibles, int EmpleadoId) {
 		super();
 		this.id = id;
 		this.titulo = titulo;
@@ -20,6 +21,7 @@ public class Libro {
 		this.editorial = editorial;
 		this.total = total;
 		this.disponibles = disponibles;
+		this.EmpleadoId = EmpleadoId;
 	}
 
 
@@ -83,7 +85,13 @@ public class Libro {
 		return disponibles;
 	}
 
- 
+    public int getEmpleadoId() {
+        return EmpleadoId;
+    }
+
+    public void setEmpleadoId(int EmpleadoId) {
+        this.EmpleadoId = EmpleadoId;
+    }
 
 
 }

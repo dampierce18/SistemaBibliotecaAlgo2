@@ -1,6 +1,7 @@
 package sistemabiblioteca.controlador;
 
 import sistemabiblioteca.dao.ReporteDAO;
+import sistemabiblioteca.dao.PrestamoDAO;
 import sistemabiblioteca.vista.PanelReportes;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -10,21 +11,26 @@ import java.util.Map;
 public class ControladorReportes {
     private PanelReportes vista;
     private ReporteDAO reporteDAO;
+    private PrestamoDAO prestamoDAO; // NUEVO: Para actualizar préstamos atrasados
     
     public ControladorReportes(PanelReportes vista) {
-        this(vista, new ReporteDAO());
+        this(vista, new ReporteDAO(), new PrestamoDAO());
     }
     
     ControladorReportes(PanelReportes vista, ReporteDAO reporteDAO) {
+        this(vista, reporteDAO, new PrestamoDAO());
+    }
+    
+    // NUEVO: Constructor con PrestamoDAO
+    ControladorReportes(PanelReportes vista, ReporteDAO reporteDAO, PrestamoDAO prestamoDAO) {
         this.vista = vista;
         this.reporteDAO = reporteDAO;
+        this.prestamoDAO = prestamoDAO; // NUEVO
         configurarEventos();
         cargarTodosLosReportes();
     }
     
-    // Nuevo método para configurar los eventos
     private void configurarEventos() {
-        // Configurar el botón de actualizar
         vista.getBtnActualizar().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -33,15 +39,15 @@ public class ControladorReportes {
         });
     }
     
-    // Método para actualizar todos los reportes con feedback visual
     private void actualizarReportes() {
         try {
-            // Mostrar estado de "cargando" en el botón
             vista.iniciarActualizacion();
             
-            // Ejecutar en un hilo separado para no bloquear la interfaz
             new Thread(() -> {
                 try {
+                    // NUEVO: Actualizar préstamos atrasados antes de generar reportes
+                    actualizarPrestamosAtrasados();
+                    
                     // Actualizar todos los reportes
                     cargarResumenGeneral();
                     cargarLibrosMasPrestados();
@@ -50,11 +56,9 @@ public class ControladorReportes {
                     cargarSituacionActual();
                     
                 } catch (Exception ex) {
-                    // Mostrar error en el EDT
-                        vista.mostrarError("Error al actualizar reportes: " + ex.getMessage());
+                    vista.mostrarError("Error al actualizar reportes: " + ex.getMessage());
                 } finally {
-                    // Restaurar el botón en el EDT
-                        vista.finalizarActualizacion();
+                    vista.finalizarActualizacion();
                 }
             }).start();
             
@@ -64,7 +68,20 @@ public class ControladorReportes {
         }
     }
     
+    // NUEVO MÉTODO: Actualizar préstamos atrasados
+    private void actualizarPrestamosAtrasados() {
+        try {
+            prestamoDAO.actualizarPrestamosAtrasados();
+            System.out.println("Préstamos atrasados actualizados correctamente");
+        } catch (Exception e) {
+            System.err.println("Error actualizando préstamos atrasados: " + e.getMessage());
+        }
+    }
+    
     public void cargarTodosLosReportes() {
+        // NUEVO: Actualizar préstamos atrasados antes de cargar
+        actualizarPrestamosAtrasados();
+        
         cargarResumenGeneral();
         cargarLibrosMasPrestados();
         cargarUsuariosMasActivos();
@@ -81,6 +98,10 @@ public class ControladorReportes {
             int prestamosAtrasados = resumen.getOrDefault("prestamos_atrasados", 0);
             int usuariosSancionados = resumen.getOrDefault("usuarios_sancionados", 0);
             int multasPendientes = resumen.getOrDefault("multas_pendientes", 0);
+            
+            // DEBUG: Mostrar valores en consola
+            System.out.println("DEBUG Reporte - Activos: " + prestamosActivos + 
+                             ", Atrasados: " + prestamosAtrasados);
             
             vista.mostrarResumenGeneral(totalPrestamosMes, prestamosActivos, 
                                       prestamosAtrasados, usuariosSancionados, 

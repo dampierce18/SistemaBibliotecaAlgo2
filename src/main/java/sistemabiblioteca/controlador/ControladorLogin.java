@@ -1,35 +1,45 @@
 package sistemabiblioteca.controlador;
 
+import sistemabiblioteca.dao.EmpleadoDAO;
+import sistemabiblioteca.modelo.Empleado;
 import sistemabiblioteca.vista.LoginFrame;
 import javax.swing.*;
 
 public class ControladorLogin {
     private LoginFrame vista;
-    
-    static final String ADMIN_USUARIO = "admin";
-    static final String ADMIN_PASSWORD = "123";
-    static final String EMPLEADO_USUARIO = "empleado";
-    static final String EMPLEADO_PASSWORD = "123";
-    
-    private String usuarioLogueado; 
+    private EmpleadoDAO empleadoDAO;
+    private Empleado empleadoLogueado;
     
     public ControladorLogin() {
         this(new LoginFrame());
     }
     
     public ControladorLogin(LoginFrame vista) {
-    	this.vista = vista;
+        this.vista = vista;
+        this.empleadoDAO = new EmpleadoDAO();
         configurarEventos();
         vista.setVisible(true);
     }
     
-    
-    private void configurarEventos() {
-        vista.getBtnLogin().addActionListener(e -> verificarCredenciales());
-        vista.getBtnSalir().addActionListener(e -> salirSistema());
+    public ControladorLogin(LoginFrame vista, EmpleadoDAO empleadoDAO) {
+        this.vista = vista;
+        this.empleadoDAO = empleadoDAO;
+        configurarEventos();
+        vista.setVisible(true);
     }
     
-    public void verificarCredenciales() {
+    // Método factory para permitir testing
+    public EmpleadoDAO crearEmpleadoDAO() {
+        return new EmpleadoDAO();
+    }
+    
+     void configurarEventos() {
+        vista.getBtnLogin().addActionListener(e -> verificarCredenciales());
+        vista.getBtnSalir().addActionListener(e -> salirSistema());
+        
+    }
+    
+     void verificarCredenciales() {
         String usuario = vista.getTxtUsuario().getText().trim();
         String password = new String(vista.getTxtPassword().getPassword());
         
@@ -38,42 +48,50 @@ public class ControladorLogin {
             return;
         }
         
-        if ((usuario.equals(ADMIN_USUARIO) && password.equals(ADMIN_PASSWORD)) ||
-            (usuario.equals(EMPLEADO_USUARIO) && password.equals(EMPLEADO_PASSWORD))) {
+        try {
+            // Autenticar desde la base de datos
+            empleadoLogueado = empleadoDAO.autenticar(usuario, password);
             
-            this.usuarioLogueado = usuario;
-            abrirSistemaPrincipal();
+            if (empleadoLogueado != null) {
+                abrirSistemaPrincipal();
+            } else {
+                vista.mostrarError("Usuario o contraseña incorrectos");
+                vista.limpiarFormulario();
+            }
             
-        } else {
-            vista.mostrarError("Usuario o contraseña incorrectos");
-            vista.limpiarFormulario();
+        } catch (Exception e) {
+            vista.mostrarError("Error de conexión: " + e.getMessage());
+            System.err.println("Error en autenticación: " + e.getMessage());
         }
     }
     
-    private void abrirSistemaPrincipal() {
+     void abrirSistemaPrincipal() {
         vista.dispose();
         
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ControladorVistaPrincipal(usuarioLogueado);
-            }
+        SwingUtilities.invokeLater(() -> {
+            new ControladorVistaPrincipal(empleadoLogueado);
         });
     }
     
     public void salirSistema() {
-    	if (vista.confirmarSalida()) {
-    		exit(0);
-    	}
-
+        if (vista.confirmarSalida()) {
+            exit(0);
+        }
     }
 
     protected void exit(int status) {
         System.exit(status);
     }
     
-    String getUsuarioLogueado() {
-        return usuarioLogueado;
+    public Empleado getEmpleadoLogueado() {
+        return empleadoLogueado;
     }
     
+    public String getUsuarioLogueado() {
+        return empleadoLogueado != null ? empleadoLogueado.getUsuario() : null;
+    }
+    
+    public String getRolUsuarioLogueado() {
+        return empleadoLogueado != null ? empleadoLogueado.getRol() : null;
+    }
 }

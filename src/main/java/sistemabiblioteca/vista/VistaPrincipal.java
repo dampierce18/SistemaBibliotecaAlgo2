@@ -2,13 +2,12 @@ package sistemabiblioteca.vista;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
 import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class VistaPrincipal extends JFrame {
-	private static final long serialVersionUID = 1L;
-	private JPanel panelLateral;
+    private static final long serialVersionUID = 1L;
+    private JPanel panelLateral;
     private JPanel panelContenido;
     private CardLayout cardLayout;
     
@@ -22,6 +21,7 @@ public class VistaPrincipal extends JFrame {
     private JButton btnUsuarios;
     private JButton btnLibros;
     private JButton btnReportes;
+    private JButton btnEmpleados; // NUEVO
     private JButton btnSalir;
     
     private JPanel panelPrincipal;
@@ -29,6 +29,7 @@ public class VistaPrincipal extends JFrame {
     private PanelUsuarios panelUsuarios;
     private PanelLibros panelLibros;
     private PanelReportes panelReportes;
+    private PanelEmpleados panelEmpleados; // NUEVO
     
     public VistaPrincipal() {
         configurarVentana();
@@ -43,7 +44,6 @@ public class VistaPrincipal extends JFrame {
         setLayout(new BorderLayout());
     }
     
-   
     private void inicializarComponentes() {
         panelLateral = crearPanelLateral();
         add(panelLateral, BorderLayout.WEST);
@@ -58,7 +58,7 @@ public class VistaPrincipal extends JFrame {
     
     private JPanel crearPanelLateral() {
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(8, 1, 0, 5));
+        panel.setLayout(new GridLayout(9, 1, 0, 5)); // CAMBIADO: 9 filas en lugar de 8
         panel.setPreferredSize(new Dimension(180, 0));
         panel.setBackground(new Color(240, 240, 240));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -77,7 +77,10 @@ public class VistaPrincipal extends JFrame {
         
         btnReportes = new JButton("Reportes");
         panel.add(btnReportes);
-        panel.add(new JLabel());
+        
+        btnEmpleados = new JButton("Empleados"); // NUEVO
+        panel.add(btnEmpleados);
+        
         panel.add(new JLabel()); // espacio
 
         btnSalir = new JButton("Salir");
@@ -85,7 +88,6 @@ public class VistaPrincipal extends JFrame {
 
         return panel;
     }
-
     
     private void inicializarPanelesContenido() {
         panelPrincipal = crearPanelPrincipal();
@@ -102,6 +104,9 @@ public class VistaPrincipal extends JFrame {
         
         panelReportes = new PanelReportes();
         panelContenido.add(panelReportes, "Reportes");
+        
+        panelEmpleados = new PanelEmpleados(); // NUEVO
+        panelContenido.add(panelEmpleados, "Empleados");
     }
     
     private JPanel crearPanelPrincipal() {
@@ -191,7 +196,7 @@ public class VistaPrincipal extends JFrame {
         return confirmacion == JOptionPane.YES_OPTION;
     }
 
-
+    // Métodos para agregar listeners
     public void agregarListenerPrincipal(ActionListener listener) {
         btnPrincipal.addActionListener(listener);
     }
@@ -212,20 +217,21 @@ public class VistaPrincipal extends JFrame {
         btnReportes.addActionListener(listener);
     }
     
+    public void agregarListenerEmpleados(ActionListener listener) { // NUEVO
+        btnEmpleados.addActionListener(listener);
+    }
+    
     public void agregarListenerSalir(ActionListener listener) {
         btnSalir.addActionListener(listener);
     }
     
+    // Métodos para mostrar paneles
     public void mostrarPanelPrincipal() {
         cardLayout.show(panelContenido, "Principal");
     }
     
     public void mostrarPanelPrestamos() {
         cardLayout.show(panelContenido, "Préstamos");
-    }
-    
-    public void mostrarPanelDevoluciones() {
-        cardLayout.show(panelContenido, "Devoluciones");
     }
     
     public void mostrarPanelUsuarios() {
@@ -240,30 +246,35 @@ public class VistaPrincipal extends JFrame {
         cardLayout.show(panelContenido, "Reportes");
     }
     
+    public void mostrarPanelEmpleados() { // NUEVO
+        cardLayout.show(panelContenido, "Empleados");
+    }
+    
+    // Métodos para ocultar pestañas (para empleados)
+    public void ocultarPestanaReportes() {
+        btnReportes.setVisible(false);
+    }
+    
+    public void ocultarPestanaEmpleados() { // NUEVO
+        btnEmpleados.setVisible(false);
+    }
+    
+    // Getters
     public JPanel getPanelPrincipal() { return panelPrincipal; }
     public PanelPrestamos getPanelPrestamos() { return panelPrestamos; }
     public PanelUsuarios getPanelUsuarios() { return panelUsuarios; }
     public PanelLibros getPanelLibros() { return panelLibros; }
     public PanelReportes getPanelReportes() { return panelReportes; }
+    public PanelEmpleados getPanelEmpleados() { return panelEmpleados; } // NUEVO
+    
     public JLabel getLblTotalLibros() { return lblTotalLibros; }
     public JLabel getLblTotalUsuarios() { return lblTotalUsuarios; }
     public JLabel getLblPrestamosActivos() { return lblPrestamosActivos; }
     public JLabel getLblAtrasados() { return lblAtrasados; }
     
-    
-    public JButton getBtnReportes() {
-        return btnReportes;
-    }
-
-    public JButton getBtnUsuarios() {
-        return btnUsuarios;
-    }
-
-    public JButton getBtnLibros() {
-        return btnLibros;
-    }
-    public JButton getBtnPrestamos() {
-        return btnPrestamos;
-    }
-    
+    public JButton getBtnReportes() { return btnReportes; }
+    public JButton getBtnUsuarios() { return btnUsuarios; }
+    public JButton getBtnLibros() { return btnLibros; }
+    public JButton getBtnPrestamos() { return btnPrestamos; }
+    public JButton getBtnEmpleados() { return btnEmpleados; } // NUEVO
 }

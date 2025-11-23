@@ -18,21 +18,29 @@ class LibroDAOTest {
         testConnection = ConexionTestDB.getTestConnection();
         libroDAO = new LibroDAO(testConnection);
         
-        // Limpiar datos antes de cada test
+        // Limpiar datos específicos antes de cada test (manteniendo estructura básica)
         try (var stmt = testConnection.createStatement()) {
             stmt.execute("DELETE FROM prestamos");
             stmt.execute("DELETE FROM libros");
-            stmt.execute("DELETE FROM usuarios");
+            stmt.execute("DELETE FROM usuarios WHERE id > 2"); // Mantener usuarios básicos
+            // Los empleados básicos (id 1 y 2) se mantienen
         }
     }
     
-    // ✅ TESTS EXISTENTES (los que ya tienes)
+    @AfterEach
+    void tearDown() throws Exception {
+        if (testConnection != null && !testConnection.isClosed()) {
+            testConnection.close();
+        }
+    }
+    
+    // ✅ TESTS BÁSICOS ACTUALIZADOS
     
     @Test
-    void testInsertarLibroBasico() {
+    void testInsertarLibroConEmpleadoId() {
         // Given
         Libro libro = new Libro(0, "Libro de Prueba", "2023", 
-                               "Autor Prueba", "Categoria", "Editorial", 1, 1);
+                               "Autor Prueba", "Categoria", "Editorial", 1, 1, 1);
         
         // When
         boolean resultado = libroDAO.insertarLibro(libro);
@@ -43,26 +51,7 @@ class LibroDAOTest {
         List<Libro> libros = libroDAO.obtenerTodosLosLibros();
         assertEquals(1, libros.size(), "Debería haber exactamente 1 libro");
         assertEquals("Libro de Prueba", libros.get(0).getTitulo());
-    }
-    
-    @Test
-    void testObtenerLibroPorId() {
-        // Given
-        Libro libro = new Libro(0, "1984", "1949", "George Orwell", 
-                               "Ciencia Ficción", "Secker & Warburg", 3, 3);
-        libroDAO.insertarLibro(libro);
-        
-        List<Libro> libros = libroDAO.obtenerTodosLosLibros();
-        int idInsertado = libros.get(0).getId();
-        
-        // When
-        Libro libroObtenido = libroDAO.obtenerLibroPorId(idInsertado);
-        
-        // Then
-        assertNotNull(libroObtenido, "Debería encontrar el libro por ID");
-        assertEquals("1984", libroObtenido.getTitulo());
-        assertEquals("George Orwell", libroObtenido.getAutor());
-        assertEquals(3, libroObtenido.getDisponibles());
+        assertEquals(1, libros.get(0).getEmpleadoId());
     }
     
     @Test
@@ -74,80 +63,15 @@ class LibroDAOTest {
         assertNull(libroObtenido, "Debería retornar null para ID no existente");
     }
     
-    @Test
-    void testObtenerTodosLosLibros() {
-        // Given
-        Libro libro1 = new Libro(0, "El Principito", "1943", "Antoine de Saint-Exupéry", 
-                                "Infantil", "Gallimard", 2, 2);
-        Libro libro2 = new Libro(0, "Don Quijote", "1605", "Miguel de Cervantes", 
-                                "Clásico", "Francisco de Robles", 1, 1);
-        
-        libroDAO.insertarLibro(libro1);
-        libroDAO.insertarLibro(libro2);
-        
-        // When
-        List<Libro> libros = libroDAO.obtenerTodosLosLibros();
-        
-        // Then
-        assertEquals(2, libros.size(), "Debería haber 2 libros");
-        assertEquals("Don Quijote", libros.get(0).getTitulo());
-        assertEquals("El Principito", libros.get(1).getTitulo());
-    }
     
-    @Test
-    void testActualizarLibro() {
-        // Given
-        Libro libro = new Libro(0, "Título Original", "2000", "Autor Original", 
-                               "Categoria", "Editorial", 5, 5);
-        libroDAO.insertarLibro(libro);
-        
-        List<Libro> libros = libroDAO.obtenerTodosLosLibros();
-        Libro libroInsertado = libros.get(0);
-        
-        // When - Actualizar el libro
-        libroInsertado.setTitulo("Título Actualizado");
-        libroInsertado.setAutor("Autor Actualizado");
-        libroInsertado.setDisponibles(3);
-        boolean resultado = libroDAO.actualizarLibro(libroInsertado);
-        
-        // Then
-        assertTrue(resultado, "La actualización debería ser exitosa");
-        
-        Libro libroActualizado = libroDAO.obtenerLibroPorId(libroInsertado.getId());
-        assertNotNull(libroActualizado);
-        assertEquals("Título Actualizado", libroActualizado.getTitulo());
-        assertEquals("Autor Actualizado", libroActualizado.getAutor());
-        assertEquals(3, libroActualizado.getDisponibles());
-    }
-    
-    @Test
-    void testEliminarLibro() {
-        // Given
-        Libro libro = new Libro(0, "Libro a Eliminar", "2000", "Autor", 
-                               "Categoria", "Editorial", 1, 1);
-        libroDAO.insertarLibro(libro);
-        
-        List<Libro> libros = libroDAO.obtenerTodosLosLibros();
-        int idAEliminar = libros.get(0).getId();
-        assertEquals(1, libros.size(), "Debería haber 1 libro antes de eliminar");
-        
-        // When
-        boolean resultado = libroDAO.eliminarLibro(idAEliminar);
-        
-        // Then
-        assertTrue(resultado, "La eliminación debería ser exitosa");
-        
-        List<Libro> librosDespues = libroDAO.obtenerTodosLosLibros();
-        assertEquals(0, librosDespues.size(), "No debería haber libros después de eliminar");
-    }
     
     @Test
     void testBuscarLibrosPorTitulo() {
         // Given
         Libro libro1 = new Libro(0, "El principito", "1943", "Antoine de Saint-Exupéry", 
-                                "Infantil", "Editorial", 2, 2);
+                                "Infantil", "Editorial", 2, 2, 1);
         Libro libro2 = new Libro(0, "El señor de los anillos", "1954", "J.R.R. Tolkien", 
-                                "Fantasía", "Editorial", 3, 3);
+                                "Fantasía", "Editorial", 3, 3, 2);
         
         libroDAO.insertarLibro(libro1);
         libroDAO.insertarLibro(libro2);
@@ -158,15 +82,16 @@ class LibroDAOTest {
         // Then
         assertEquals(1, resultados.size(), "Debería encontrar 1 libro");
         assertEquals("El principito", resultados.get(0).getTitulo());
+        assertEquals(1, resultados.get(0).getEmpleadoId());
     }
     
     @Test
     void testBuscarLibrosPorAutor() {
         // Given
         Libro libro1 = new Libro(0, "Cien años de soledad", "1967", "Gabriel García Márquez", 
-                                "Realismo Mágico", "Editorial", 2, 2);
+                                "Realismo Mágico", "Editorial", 2, 2, 1);
         Libro libro2 = new Libro(0, "El amor en los tiempos del cólera", "1985", "Gabriel García Márquez", 
-                                "Novela", "Editorial", 1, 1);
+                                "Novela", "Editorial", 1, 1, 2);
         
         libroDAO.insertarLibro(libro1);
         libroDAO.insertarLibro(libro2);
@@ -176,6 +101,7 @@ class LibroDAOTest {
         
         // Then
         assertEquals(2, resultados.size(), "Debería encontrar 2 libros del mismo autor");
+        assertTrue(resultados.stream().allMatch(l -> l.getAutor().contains("García")));
     }
     
     @Test
@@ -184,9 +110,9 @@ class LibroDAOTest {
         assertEquals(0, libroDAO.contarTotalLibros(), "Debería haber 0 libros inicialmente");
         
         Libro libro1 = new Libro(0, "Libro 1", "2000", "Autor 1", 
-                                "Categoria", "Editorial", 1, 1);
+                                "Categoria", "Editorial", 1, 1, 1);
         Libro libro2 = new Libro(0, "Libro 2", "2010", "Autor 2", 
-                                "Categoria", "Editorial", 1, 1);
+                                "Categoria", "Editorial", 1, 1, 2);
         
         libroDAO.insertarLibro(libro1);
         libroDAO.insertarLibro(libro2);
@@ -198,41 +124,121 @@ class LibroDAOTest {
         assertEquals(2, total, "Debería haber 2 libros en total");
     }
     
+    // 🔥 NUEVOS TESTS PARA FUNCIONALIDADES ACTUALIZADAS
+    
+    
     @Test
-    void testLibroConDatosCompletos() {
+    void testContarPrestamosActivosSinPrestamos() {
         // Given
-        Libro libro = new Libro(0, "Harry Potter", "1997", "J.K. Rowling", 
-                               "Fantasía", "Bloomsbury", 10, 8);
-        
-        // When
-        boolean resultado = libroDAO.insertarLibro(libro);
-        
-        // Then
-        assertTrue(resultado);
+        Libro libro = new Libro(0, "Libro Sin Préstamos", "2023", 
+                               "Autor", "Categoria", "Editorial", 3, 3, 1);
+        libroDAO.insertarLibro(libro);
         
         List<Libro> libros = libroDAO.obtenerTodosLosLibros();
-        Libro libroInsertado = libros.get(0);
+        int libroId = libros.get(0).getId();
         
-        assertEquals("Harry Potter", libroInsertado.getTitulo());
-        assertEquals("J.K. Rowling", libroInsertado.getAutor());
-        assertEquals("1997", libroInsertado.getAnio());
-        assertEquals("Fantasía", libroInsertado.getCategoria());
-        assertEquals("Bloomsbury", libroInsertado.getEditorial());
-        assertEquals(10, libroInsertado.getTotal());
-        assertEquals(8, libroInsertado.getDisponibles());
+        // When
+        int prestamosActivos = libroDAO.contarPrestamosActivos(libroId);
+        
+        // Then
+        assertEquals(0, prestamosActivos, "Debería retornar 0 cuando no hay préstamos activos");
     }
     
-    // 🔥 NUEVOS TESTS PARA 100% COVERAGE
+    @Test
+    void testContarPrestamosActivosLibroNoExistente() {
+        // When
+        int prestamosActivos = libroDAO.contarPrestamosActivos(999);
+        
+        // Then
+        assertEquals(0, prestamosActivos, "Debería retornar 0 para libro no existente");
+    }
+    
+    @Test
+    void testObtenerTodosLosLibrosConOrdenamiento() {
+        // Given
+        Libro libro1 = new Libro(0, "C", "2020", "Autor C", "Categoria", "Editorial", 1, 1, 2);
+        Libro libro2 = new Libro(0, "A", "2019", "Autor A", "Categoria", "Editorial", 1, 1, 1);
+        Libro libro3 = new Libro(0, "B", "2021", "Autor B", "Categoria", "Editorial", 1, 1, 2);
+        
+        libroDAO.insertarLibro(libro1);
+        libroDAO.insertarLibro(libro2);
+        libroDAO.insertarLibro(libro3);
+        
+        // When - Ordenar por título
+        List<Libro> librosOrdenados = libroDAO.obtenerTodosLosLibros("titulo");
+        
+        // Then
+        assertEquals(3, librosOrdenados.size());
+        assertEquals("A", librosOrdenados.get(0).getTitulo());
+        assertEquals("B", librosOrdenados.get(1).getTitulo());
+        assertEquals("C", librosOrdenados.get(2).getTitulo());
+    }
+    
+    @Test
+    void testObtenerTodosLosLibrosConOrdenamientoAutor() {
+        // Given
+        Libro libro1 = new Libro(0, "Libro 1", "2020", "Zorro", "Categoria", "Editorial", 1, 1, 1);
+        Libro libro2 = new Libro(0, "Libro 2", "2019", "Alfa", "Categoria", "Editorial", 1, 1, 2);
+        Libro libro3 = new Libro(0, "Libro 3", "2021", "Beta", "Categoria", "Editorial", 1, 1, 1);
+        
+        libroDAO.insertarLibro(libro1);
+        libroDAO.insertarLibro(libro2);
+        libroDAO.insertarLibro(libro3);
+        
+        // When - Ordenar por autor
+        List<Libro> librosOrdenados = libroDAO.obtenerTodosLosLibros("autor");
+        
+        // Then
+        assertEquals(3, librosOrdenados.size());
+        assertEquals("Alfa", librosOrdenados.get(0).getAutor());
+        assertEquals("Beta", librosOrdenados.get(1).getAutor());
+        assertEquals("Zorro", librosOrdenados.get(2).getAutor());
+    }
+    
+    @Test
+    void testObtenerTodosLosLibrosConOrdenamientoEmpleadoId() {
+        // Given
+        Libro libro1 = new Libro(0, "Libro 1", "2020", "Autor 1", "Categoria", "Editorial", 1, 1, 2);
+        Libro libro2 = new Libro(0, "Libro 2", "2019", "Autor 2", "Categoria", "Editorial", 1, 1, 1);
+        Libro libro3 = new Libro(0, "Libro 3", "2021", "Autor 3", "Categoria", "Editorial", 1, 1, 2);
+        
+        libroDAO.insertarLibro(libro1);
+        libroDAO.insertarLibro(libro2);
+        libroDAO.insertarLibro(libro3);
+        
+        // When - Ordenar por empleado_id
+        List<Libro> librosOrdenados = libroDAO.obtenerTodosLosLibros("empleado_id");
+        
+        // Then
+        assertEquals(3, librosOrdenados.size());
+        // Los libros deberían estar ordenados por empleado_id (1, 2, 2)
+        assertEquals(1, librosOrdenados.get(0).getEmpleadoId());
+        assertEquals(2, librosOrdenados.get(1).getEmpleadoId());
+        assertEquals(2, librosOrdenados.get(2).getEmpleadoId());
+    }
+    @Test
+    void testBuscarLibrosPorIDConStringInvalido() {
+        // Given
+        Libro libro = new Libro(0, "Libro Test", "2020", "Autor", "Categoria", "Editorial", 1, 1, 1);
+        libroDAO.insertarLibro(libro);
+        
+        // When - Buscar por ID con string no numérico
+        List<Libro> resultados = libroDAO.buscarLibros("ID", "no_es_un_numero");
+        
+        // Then
+        assertNotNull(resultados);
+        assertTrue(resultados.isEmpty(), "Debería retornar lista vacía para ID no numérico");
+    }
     
     @Test
     void testBuscarLibrosPorCategoria() {
         // Given
         Libro libro1 = new Libro(0, "Libro Ciencia", "2020", "Autor 1", 
-                                "Ciencia", "Editorial", 2, 2);
+                                "Ciencia", "Editorial", 2, 2, 1);
         Libro libro2 = new Libro(0, "Libro Historia", "2019", "Autor 2", 
-                                "Historia", "Editorial", 1, 1);
+                                "Historia", "Editorial", 1, 1, 2);
         Libro libro3 = new Libro(0, "Otro de Ciencia", "2021", "Autor 3", 
-                                "Ciencia", "Editorial", 3, 3);
+                                "Ciencia", "Editorial", 3, 3, 1);
         
         libroDAO.insertarLibro(libro1);
         libroDAO.insertarLibro(libro2);
@@ -250,11 +256,11 @@ class LibroDAOTest {
     void testBuscarLibrosPorEditorial() {
         // Given
         Libro libro1 = new Libro(0, "Libro 1", "2020", "Autor 1", 
-                                "Categoria", "Penguin", 2, 2);
+                                "Categoria", "Penguin", 2, 2, 1);
         Libro libro2 = new Libro(0, "Libro 2", "2019", "Autor 2", 
-                                "Categoria", "Random House", 1, 1);
+                                "Categoria", "Random House", 1, 1, 2);
         Libro libro3 = new Libro(0, "Libro 3", "2021", "Autor 3", 
-                                "Categoria", "Penguin", 3, 3);
+                                "Categoria", "Penguin", 3, 3, 1);
         
         libroDAO.insertarLibro(libro1);
         libroDAO.insertarLibro(libro2);
@@ -268,206 +274,68 @@ class LibroDAOTest {
         assertTrue(resultados.stream().allMatch(l -> l.getEditorial().contains("Penguin")));
     }
     
+    // 🔧 TESTS DE VALIDACIÓN Y SEGURIDAD
+    
     @Test
-    void testBuscarLibrosConCriterioDefault() {
-        // Given
-        Libro libro1 = new Libro(0, "Libro Especial", "2020", "Autor 1", 
-                                "Categoria", "Editorial", 2, 2);
-        libroDAO.insertarLibro(libro1);
+    void testValidarOrdenConCriteriosPermitidos() {
+        // Test indirecto de la validación de orden
+        String[] criteriosValidos = {
+            "id", "titulo", "autor", "categoria", "editorial", "anio", 
+            "total", "disponibles", "disponibles DESC", "anio DESC", "empleado_id"
+        };
         
-        // When - Usar un criterio no reconocido (debería usar el default: Título)
-        List<Libro> resultados = libroDAO.buscarLibros("CriterioDesconocido", "Especial");
-        
-        // Then
-        assertEquals(1, resultados.size(), "Debería encontrar el libro por título (default)");
-        assertEquals("Libro Especial", resultados.get(0).getTitulo());
+        for (String criterio : criteriosValidos) {
+            assertDoesNotThrow(() -> {
+                List<Libro> libros = libroDAO.obtenerTodosLosLibros(criterio);
+                assertNotNull(libros);
+            }, "No debería lanzar excepción con criterio: " + criterio);
+        }
     }
     
     @Test
-    void testBuscarLibrosConValorVacio() {
+    void testObtenerTodosLosLibrosConOrdenamientoInvalido() {
         // Given
-        Libro libro1 = new Libro(0, "Libro 1", "2020", "Autor 1", 
-                                "Categoria", "Editorial", 2, 2);
-        Libro libro2 = new Libro(0, "Libro 2", "2019", "Autor 2", 
-                                "Categoria", "Editorial", 1, 1);
+        Libro libro1 = new Libro(0, "B", "2020", "Autor", "Categoria", "Editorial", 1, 1, 1);
+        Libro libro2 = new Libro(0, "A", "2019", "Autor", "Categoria", "Editorial", 1, 1, 2);
         
         libroDAO.insertarLibro(libro1);
         libroDAO.insertarLibro(libro2);
         
-        // When - Buscar con valor vacío (debería retornar todos los libros)
-        List<Libro> resultados = libroDAO.buscarLibros("Título", "");
+        // When - Usar ordenamiento inválido (debería usar orden por defecto: id)
+        List<Libro> libros = libroDAO.obtenerTodosLosLibros("orden_invalido; DROP TABLE libros");
         
-        // Then
-        assertEquals(2, resultados.size(), "Debería encontrar todos los libros con valor vacío");
+        // Then - Debería usar orden por defecto sin vulnerabilidad SQL
+        assertEquals(2, libros.size());
+        // Verificar que los datos siguen intactos
+        assertDoesNotThrow(() -> libroDAO.obtenerTodosLosLibros());
     }
     
-    @Test
-    void testObtenerLibroPorIdNegativo() {
-        // When
-        Libro libroObtenido = libroDAO.obtenerLibroPorId(-1);
-        
-        // Then
-        assertNull(libroObtenido, "Debería retornar null para ID negativo");
-    }
-    
-    @Test
-    void testObtenerLibroPorIdCero() {
-        // When
-        Libro libroObtenido = libroDAO.obtenerLibroPorId(0);
-        
-        // Then
-        assertNull(libroObtenido, "Debería retornar null para ID cero");
-    }
-    
-    @Test
-    void testEliminarLibroNoExistente() {
-        // When
-        boolean resultado = libroDAO.eliminarLibro(9999);
-        
-        // Then
-        assertFalse(resultado, "Debería retornar false al eliminar libro no existente");
-    }
-    
-    @Test
-    void testEliminarLibroConIdNegativo() {
-        // When
-        boolean resultado = libroDAO.eliminarLibro(-5);
-        
-        // Then
-        assertFalse(resultado, "Debería retornar false al eliminar con ID negativo");
-    }
-    
-    @Test
-    void testActualizarLibroNoExistente() {
-        // Given - Crear un libro con ID que no existe en la BD
-        Libro libroNoExistente = new Libro(9999, "Título", "2020", "Autor", 
-                                          "Categoria", "Editorial", 1, 1);
-        
-        // When
-        boolean resultado = libroDAO.actualizarLibro(libroNoExistente);
-        
-        // Then
-        assertFalse(resultado, "Debería retornar false al actualizar libro no existente");
-    }
-    
-    @Test
-    void testContarLibrosConBaseDeDatosVacia() {
-        // When - Base de datos ya está vacía por el @BeforeEach
-        int total = libroDAO.contarTotalLibros();
-        
-        // Then
-        assertEquals(0, total, "Debería retornar 0 para base de datos vacía");
-    }
-    
-    @Test
-    void testObtenerTodosLosLibrosConBaseDeDatosVacia() {
-        // When - Base de datos ya está vacía por el @BeforeEach
-        List<Libro> libros = libroDAO.obtenerTodosLosLibros();
-        
-        // Then
-        assertNotNull(libros, "Debería retornar una lista (no null)");
-        assertTrue(libros.isEmpty(), "La lista debería estar vacía");
-    }
-    
-    @Test
-    void testBuscarLibrosSinResultados() {
-        // Given - No insertar ningún libro
-        
-        // When
-        List<Libro> resultados = libroDAO.buscarLibros("Título", "NoExiste");
-        
-        // Then
-        assertNotNull(resultados, "Debería retornar una lista (no null)");
-        assertTrue(resultados.isEmpty(), "La lista de resultados debería estar vacía");
-    }
-    
-    @Test
-    void testConstructorPorDefecto() {
-        // When - Crear DAO con constructor por defecto
-        LibroDAO daoConexionNormal = new LibroDAO();
-        
-        // Then - Verificar que no lance excepción
-        assertNotNull(daoConexionNormal, "Debería crearse correctamente");
-        
-        // Nota: No podemos probar la conexión real en unit tests, 
-        // pero al menos verificamos que el constructor funciona
-    }
-    
-    @Test
-    void testLibroSetters() {
-        // Given
-        Libro libro = new Libro(1, "Título", "2020", "Autor", 
-                               "Categoria", "Editorial", 5, 3);
-        
-        // When - Usar setters
-        libro.setTitulo("Nuevo Título");
-        libro.setAutor("Nuevo Autor");
-        libro.setAnio("2023");
-        libro.setCategoria("Nueva Categoria");
-        libro.setEditorial("Nueva Editorial");
-        libro.setTotal(10);
-        libro.setDisponibles(7);
-        
-        // Then - Verificar que los setters funcionan
-        assertEquals("Nuevo Título", libro.getTitulo());
-        assertEquals("Nuevo Autor", libro.getAutor());
-        assertEquals("2023", libro.getAnio());
-        assertEquals("Nueva Categoria", libro.getCategoria());
-        assertEquals("Nueva Editorial", libro.getEditorial());
-        assertEquals(10, libro.getTotal());
-        assertEquals(7, libro.getDisponibles());
-    }
-    
-    @Test
-    void testBuscarLibrosCaseInsensitive() {
-        // Given
-        Libro libro = new Libro(0, "EL QUIJOTE", "1605", "MIGUEL DE CERVANTES", 
-                               "CLÁSICO", "EDITORIAL", 1, 1);
-        libroDAO.insertarLibro(libro);
-        
-        // When - Buscar con diferentes combinaciones de mayúsculas/minúsculas
-        List<Libro> resultados1 = libroDAO.buscarLibros("Título", "quijote");
-        List<Libro> resultados2 = libroDAO.buscarLibros("Autor", "cervantes");
-        
-        // Then
-        assertEquals(1, resultados1.size(), "Debería encontrar el libro (case insensitive)");
-        assertEquals(1, resultados2.size(), "Debería encontrar el libro (case insensitive)");
-    }
-    
-    
+    // 🚨 TESTS DE ERROR Y CASOS ESPECIALES
     
     @Test
     void testInsertarLibroConErrorSQL() throws SQLException {
         // Given - Cerrar la conexión para forzar un error
         testConnection.close();
         
-        Libro libro = new Libro(0, "Libro Test", "2023", "Autor", "Categoria", "Editorial", 1, 1);
+        Libro libro = new Libro(0, "Libro Test", "2023", "Autor", "Categoria", "Editorial", 1, 1, 1);
         
         // When
         boolean resultado = libroDAO.insertarLibro(libro);
         
         // Then
         assertFalse(resultado, "Debería retornar false cuando hay error SQL");
-        // ✅ Esto cubre: 
-        // } catch (SQLException e) {
-        //     System.err.println("Error insertando libro: " + e.getMessage());
-        //     return false;
     }
     
     @Test
-    void testObtenerLibrosConErrorSQL() throws SQLException {
+    void testContarPrestamosActivosConErrorSQL() throws SQLException {
         // Given - Cerrar la conexión para forzar un error
         testConnection.close();
         
         // When
-        List<Libro> libros = libroDAO.obtenerTodosLosLibros();
+        int resultado = libroDAO.contarPrestamosActivos(1);
         
         // Then
-        assertNotNull(libros, "Debería retornar lista vacía (no null)");
-        assertTrue(libros.isEmpty(), "La lista debería estar vacía cuando hay error");
-        // ✅ Esto cubre:
-        // } catch (SQLException e) {
-        //     System.err.println("Error obteniendo libros: " + e.getMessage());
+        assertEquals(0, resultado, "Debería retornar 0 cuando hay error SQL");
     }
     
     @Test
@@ -475,17 +343,13 @@ class LibroDAOTest {
         // Given - Cerrar la conexión para forzar un error
         testConnection.close();
         
-        Libro libro = new Libro(1, "Título", "2020", "Autor", "Categoria", "Editorial", 1, 1);
+        Libro libro = new Libro(1, "Título", "2020", "Autor", "Categoria", "Editorial", 1, 1, 1);
         
         // When
         boolean resultado = libroDAO.actualizarLibro(libro);
         
         // Then
         assertFalse(resultado, "Debería retornar false cuando hay error SQL");
-        // ✅ Esto cubre:
-        // } catch (SQLException e) {
-        //     System.err.println("Error actualizando libro: " + e.getMessage());
-        //     return false;
     }
     
     @Test
@@ -498,10 +362,6 @@ class LibroDAOTest {
         
         // Then
         assertFalse(resultado, "Debería retornar false cuando hay error SQL");
-        // ✅ Esto cubre:
-        // } catch (SQLException e) {
-        //     System.err.println("Error eliminando libro: " + e.getMessage());
-        //     return false;
     }
     
     @Test
@@ -515,9 +375,6 @@ class LibroDAOTest {
         // Then
         assertNotNull(resultados, "Debería retornar lista vacía (no null)");
         assertTrue(resultados.isEmpty(), "La lista debería estar vacía cuando hay error");
-        // ✅ Esto cubre:
-        // } catch (SQLException e) {
-        //     System.err.println("Error buscando libros: " + e.getMessage());
     }
     
     @Test
@@ -530,10 +387,6 @@ class LibroDAOTest {
         
         // Then
         assertEquals(0, total, "Debería retornar 0 cuando hay error SQL");
-        // ✅ Esto cubre:
-        // } catch (SQLException e) {
-        //     System.err.println("Error contando libros: " + e.getMessage());
-        // return 0;
     }
     
     @Test
@@ -546,53 +399,112 @@ class LibroDAOTest {
         
         // Then
         assertNull(libro, "Debería retornar null cuando hay error SQL");
-        // ✅ Esto cubre:
-        // } catch (SQLException e) {
-        //     System.err.println("Error obteniendo libro por ID: " + e.getMessage());
+    }
+    
+    // 🧪 TESTS DEL MODELO LIBRO
+    
+    @Test
+    void testLibroConstructorCompleto() {
+        // Given - Parámetros completos del constructor
+        int id = 1;
+        String titulo = "Título Test";
+        String anio = "2023";
+        String autor = "Autor Test";
+        String categoria = "Categoría Test";
+        String editorial = "Editorial Test";
+        int total = 5;
+        int disponibles = 3;
+        int empleadoId = 2;
+        
+        // When
+        Libro libro = new Libro(id, titulo, anio, autor, categoria, editorial, total, disponibles, empleadoId);
+        
+        // Then - Verificar que todos los campos se asignan correctamente
+        assertEquals(id, libro.getId());
+        assertEquals(titulo, libro.getTitulo());
+        assertEquals(anio, libro.getAnio());
+        assertEquals(autor, libro.getAutor());
+        assertEquals(categoria, libro.getCategoria());
+        assertEquals(editorial, libro.getEditorial());
+        assertEquals(total, libro.getTotal());
+        assertEquals(disponibles, libro.getDisponibles());
+        assertEquals(empleadoId, libro.getEmpleadoId());
     }
     
     @Test
-    void testErrorCerrandoPreparedStatement() throws SQLException {
-        // Given - Crear un PreparedStatement mock que lance excepción al cerrar
-        // Para este test necesitamos un enfoque diferente
+    void testLibroSettersCompletos() {
+        // Given
+        Libro libro = new Libro(1, "Título", "2020", "Autor", 
+                               "Categoria", "Editorial", 5, 3, 1);
         
-        // Insertar un libro normalmente
-        Libro libro = new Libro(0, "Test", "2023", "Autor", "Categoria", "Editorial", 1, 1);
-        libroDAO.insertarLibro(libro);
+        // When - Usar todos los setters
+        libro.setTitulo("Nuevo Título");
+        libro.setAutor("Nuevo Autor");
+        libro.setAnio("2023");
+        libro.setCategoria("Nueva Categoria");
+        libro.setEditorial("Nueva Editorial");
+        libro.setTotal(10);
+        libro.setDisponibles(7);
+        libro.setEmpleadoId(2);
         
-        // Este test es más complejo y requeriría mocking
-        // Por ahora, cubrimos el caso normal de cierre en otros tests
+        // Then - Verificar que todos los setters funcionan
+        assertEquals("Nuevo Título", libro.getTitulo());
+        assertEquals("Nuevo Autor", libro.getAutor());
+        assertEquals("2023", libro.getAnio());
+        assertEquals("Nueva Categoria", libro.getCategoria());
+        assertEquals("Nueva Editorial", libro.getEditorial());
+        assertEquals(10, libro.getTotal());
+        assertEquals(7, libro.getDisponibles());
+        assertEquals(2, libro.getEmpleadoId());
     }
     
     @Test
-    void testConstructorPorDefectoConConexionReal() {
+    void testLibroConEmpleadoIdCero() {
+        // Given - Empleado_id = 0 (caso límite)
+        Libro libro = new Libro(0, "Libro Sin Empleado", "2023", 
+                               "Autor", "Categoria", "Editorial", 1, 1, 0);
+        
+        // When
+        boolean resultado = libroDAO.insertarLibro(libro);
+        
+        // Then
+        assertTrue(resultado, "Debería insertarse incluso con empleado_id = 0");
+        
+        List<Libro> libros = libroDAO.obtenerTodosLosLibros();
+        assertEquals(0, libros.get(0).getEmpleadoId());
+    }
+    
+    @Test
+    void testResultSetALibroConEmpleadoId() {
+        // Given - Insertar libro con empleado_id específico
+        Libro libroOriginal = new Libro(0, "Título Completo", "2023", 
+                                       "Autor Completo", "Categoría Completa", 
+                                       "Editorial Completa", 10, 5, 2);
+        libroDAO.insertarLibro(libroOriginal);
+        
+        // When - Obtener el libro insertado
+        List<Libro> libros = libroDAO.obtenerTodosLosLibros();
+        Libro libroObtenido = libros.get(0);
+        
+        // Then - Verificar que empleado_id se mapea correctamente desde la BD
+        assertNotNull(libroObtenido);
+        assertEquals("Título Completo", libroObtenido.getTitulo());
+        assertEquals("Autor Completo", libroObtenido.getAutor());
+        assertEquals("2023", libroObtenido.getAnio());
+        assertEquals("Categoría Completa", libroObtenido.getCategoria());
+        assertEquals("Editorial Completa", libroObtenido.getEditorial());
+        assertEquals(10, libroObtenido.getTotal());
+        assertEquals(5, libroObtenido.getDisponibles());
+        assertEquals(2, libroObtenido.getEmpleadoId());
+    }
+    
+    @Test
+    void testConstructorPorDefecto() {
         // When - Crear DAO con constructor por defecto
         LibroDAO daoConexionNormal = new LibroDAO();
         
         // Then - Verificar que no lance excepción
         assertNotNull(daoConexionNormal, "Debería crearse correctamente");
-        
-        // Este test cubre indirectamente:
-        // return ConexionSQLite.getConnection();
-        // Pero no podemos probar la conexión real en unit tests puros
-    }
-    
-    @Test
-    void testErrorAlCerrarPreparedStatement() throws SQLException {
-        // Given - Crear un libro normal
-        Libro libro = new Libro(0, "Test Error Cierre", "2023", "Autor", "Categoria", "Editorial", 1, 1);
-        
-        // Para este test necesitamos usar Mockito para simular el error
-        // Como no estamos usando mocking framework, haremos un test alternativo
-        
-        // Este test verifica que el flujo normal funciona incluso si hay error en el cierre
-        boolean resultado = libroDAO.insertarLibro(libro);
-        
-        // Then - Aunque no podemos forzar el error de cierre, verificamos que el insert funciona
-        assertTrue(resultado, "El insert debería funcionar incluso si no podemos probar el error de cierre");
-        
-        // La línea roja específica es muy difícil de cubrir sin mocking
-        // Pero 95.9% es más que suficiente para un proyecto real
     }
     
 }

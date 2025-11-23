@@ -25,12 +25,12 @@ public class UsuarioDAO {
     }
     
     public boolean insertarUsuario(Usuario usuario) {
-        String sql = "INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, domicilio, telefono, sanciones, monto_sancion) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, domicilio, telefono, sanciones, monto_sancion, empleado_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement pstmt = null;
         
         try {
             Connection conn = getConnection();
-            
+            boolean autoCommit = conn.getAutoCommit();
             pstmt = conn.prepareStatement(sql);
             
             pstmt.setString(1, usuario.getNombre());
@@ -40,9 +40,12 @@ public class UsuarioDAO {
             pstmt.setString(5, usuario.getTelefono());
             pstmt.setInt(6, usuario.getSanciones());
             pstmt.setInt(7, usuario.getMontoSancion());
+            pstmt.setInt(8, usuario.getEmpleadoId());
             
             int filasAfectadas = pstmt.executeUpdate();
-            
+            if (!autoCommit) {
+                conn.commit();
+            }
             return filasAfectadas > 0;
             
         } catch (SQLException e) {
@@ -81,36 +84,6 @@ public class UsuarioDAO {
         }
         
         return null;
-    }
-    
-    public List<Usuario> obtenerTodosLosUsuarios() {
-        List<Usuario> usuarios = new ArrayList<>();
-        String sql = "SELECT * FROM usuarios ORDER BY nombre, apellido_paterno";
-        Statement stmt = null;
-        ResultSet rs = null;
-        
-        try {
-            Connection conn = getConnection();
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(sql);
-            
-            while (rs.next()) {
-                Usuario usuario = resultSetAUsuario(rs);
-                usuarios.add(usuario);
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error obteniendo usuarios: " + e.getMessage());
-        } finally {
-            if (rs != null) {
-                try { rs.close(); } catch (SQLException e) { }
-            }
-            if (stmt != null) {
-                try { stmt.close(); } catch (SQLException e) { }
-            }
-        }
-        
-        return usuarios;
     }
     
     public boolean actualizarUsuario(Usuario usuario) {
@@ -248,6 +221,53 @@ public class UsuarioDAO {
         return 0;
     }
     
+    public List<Usuario> obtenerTodosLosUsuarios(String orden) {
+        List<Usuario> usuarios = new ArrayList<>();
+        
+        // Validar el criterio de orden para prevenir SQL injection
+        String ordenValido = validarOrden(orden);
+        String sql = "SELECT * FROM usuarios ORDER BY " + ordenValido;
+        
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                Usuario usuario = resultSetAUsuario(rs);
+                usuarios.add(usuario);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error obteniendo usuarios: " + e.getMessage());
+        }
+        
+        return usuarios;
+    }
+    
+    // Método para validar el criterio de orden (seguridad)
+    private String validarOrden(String orden) {
+        // Lista blanca de criterios permitidos
+        String[] criteriosPermitidos = {
+            "id", "nombre", "apellido_paterno", "apellido_materno", 
+            "telefono", "sanciones", "monto_sancion", "empleado_id",
+            "sanciones DESC", "monto_sancion DESC"
+        };
+        
+        for (String criterio : criteriosPermitidos) {
+            if (criterio.equals(orden)) {
+                return orden;
+            }
+        }
+        
+        // Si no es válido, usar orden por defecto
+        return "id";
+    }
+    
+    // Mantener método antiguo para compatibilidad
+    public List<Usuario> obtenerTodosLosUsuarios() {
+        return obtenerTodosLosUsuarios("id");
+    }
+    
     private Usuario resultSetAUsuario(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
         usuario.setId(rs.getInt("id"));
@@ -258,6 +278,7 @@ public class UsuarioDAO {
         usuario.setTelefono(rs.getString("telefono"));
         usuario.setSanciones(rs.getInt("sanciones"));
         usuario.setMontoSancion(rs.getInt("monto_sancion"));
+        usuario.setEmpleadoId(rs.getInt("empleado_id"));
         return usuario;
     }
 }

@@ -6,6 +6,7 @@ public class Prestamo {
     private int id;
     private int libroId;
     private int usuarioId;
+    private int empleadoId; // NUEVO: ID del empleado que realizó el préstamo
     private LocalDate fechaPrestamo;
     private LocalDate fechaDevolucion;
     private LocalDate fechaDevolucionReal;
@@ -13,9 +14,11 @@ public class Prestamo {
     
     public Prestamo() {}
     
-    public Prestamo(int libroId, int usuarioId, LocalDate fechaPrestamo, LocalDate fechaDevolucion) {
+    // Constructor actualizado
+    public Prestamo(int libroId, int usuarioId, int empleadoId, LocalDate fechaPrestamo, LocalDate fechaDevolucion) {
         this.libroId = libroId;
         this.usuarioId = usuarioId;
+        this.empleadoId = empleadoId;
         this.fechaPrestamo = fechaPrestamo;
         this.fechaDevolucion = fechaDevolucion;
         this.estado = "ACTIVO";
@@ -30,6 +33,10 @@ public class Prestamo {
     
     public int getUsuarioId() { return usuarioId; }
     public void setUsuarioId(int usuarioId) { this.usuarioId = usuarioId; }
+    
+    // NUEVO: Getter y Setter para empleadoId
+    public int getEmpleadoId() { return empleadoId; }
+    public void setEmpleadoId(int empleadoId) { this.empleadoId = empleadoId; }
     
     public LocalDate getFechaPrestamo() { return fechaPrestamo; }
     public void setFechaPrestamo(LocalDate fechaPrestamo) { this.fechaPrestamo = fechaPrestamo; }
